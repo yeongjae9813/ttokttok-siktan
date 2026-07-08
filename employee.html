@@ -240,28 +240,39 @@ const WEEK=[
  {d:'목',label:'목요일',kcal:680,allergens:['대두','밀','닭고기'],dishes:['찰흑미밥','사골콩나물우거지국','닭고기카레강정 (닭고기:국내산)','건파래볶음','상추된장무침','총각김치']},
  {d:'금',label:'금요일',closed:true},
 ];
-const TODAY_IDX=1;
+// 실제 오늘 요일을 자동 반영 (월~금 → 0~4, 주말 → -1; 데이터상 금(4)은 휴무)
+const TODAY_IDX=(function(){const wd=new Date().getDay();return (wd>=1&&wd<=5)?wd-1:-1;})();
+const CLOSED_TODAY=(TODAY_IDX===-1)||!!(WEEK[TODAY_IDX]&&WEEK[TODAY_IDX].closed);
+function nextOpenLabel(){for(let k=1;k<=7;k++){const wd=(new Date().getDay()+k)%7;const idx=(wd>=1&&wd<=4)?wd-1:-1;if(idx>=0&&WEEK[idx]&&!WEEK[idx].closed)return WEEK[idx].label;}return '';}
 const state={likes:214,total:263,todayIdx:TODAY_IDX,points:1240,voted:false};
 function ringLight(pct,color,center,sub,size=104){pct=Math.max(0,Math.min(100,pct));const r=(size-14)/2,c=2*Math.PI*r,off=c*(1-pct/100),cc=size/2;
   return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${cc}" cy="${cc}" r="${r}" fill="none" stroke="#E6EDF8" stroke-width="11"/><circle cx="${cc}" cy="${cc}" r="${r}" fill="none" stroke="${color}" stroke-width="11" stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" transform="rotate(-90 ${cc} ${cc})"/><text x="50%" y="49%" text-anchor="middle" font-size="23" font-weight="800" fill="#182741">${center}</text><text x="50%" y="64%" text-anchor="middle" font-size="10" fill="#6B7A99">${sub}</text></svg>`;}
 
 /* 포인트 streak */
-function renderStreak(){const days=['월','화','수','목','금'],done=[true,false,false,false,false],todayI=1;
-  document.getElementById('streak').innerHTML=days.map((d,i)=>{const cls=i===todayI?'today':(i<todayI||done[i])?'done':'';const mark=cls==='done'?'✓':cls==='today'?'★':'';return `<div class="s ${cls}"><div class="dot">${mark}</div><small>${d}</small></div>`;}).join('');}
+function renderStreak(){const days=['월','화','수','목','금'],todayI=TODAY_IDX;
+  document.getElementById('streak').innerHTML=days.map((d,i)=>{const cls=i===todayI?'today':(i<todayI?'done':'');const mark=cls==='done'?'✓':cls==='today'?'★':'';return `<div class="s ${cls}"><div class="dot">${mark}</div><small>${d}</small></div>`;}).join('');}
 
 /* 오늘 */
 function renderToday(){
-  const t=WEEK[TODAY_IDX],dt=new Date();
-  document.getElementById('edate').textContent=`${dt.getMonth()+1}월 ${dt.getDate()}일 ${t.label}`;
+  const dt=new Date(),WD=['일','월','화','수','목','금','토'];
+  document.getElementById('edate').textContent=`${dt.getMonth()+1}월 ${dt.getDate()}일 ${WD[dt.getDay()]}요일`;
+  document.getElementById('eServe').textContent=SERVE;
+  document.getElementById('ptNum').textContent=state.points.toLocaleString();
+  document.getElementById('eventsE').innerHTML=EVENTS.map(e=>{const cls=e.tag==='의회'?'council':e.tag==='행사'?'event':e.tag==='회의'?'meeting':'none';return `<div class="evt"><span class="evtag ${cls}">${e.tag}</span><div class="en">${e.name}<div class="et">${e.et}</div></div></div>`;}).join('');
+  const box=document.getElementById('eAllergen');box.innerHTML='';
+  if(CLOSED_TODAY){
+    document.getElementById('eKcal').textContent='휴무';
+    document.getElementById('eCat').textContent=(TODAY_IDX===-1?'주말':'금요일')+' · 구내식당 휴무';
+    const nx=nextOpenLabel();
+    document.getElementById('eMealset').innerHTML=`<div class="ms-row" style="border-left-color:#F59E0B;background:#FFF7E6;"><span class="ms-name">🚫 오늘은 구내식당을 운영하지 않습니다.${nx?' · 다음 급식 '+nx:''}</span></div>`;
+    return;
+  }
+  const t=WEEK[TODAY_IDX];
   document.getElementById('eKcal').textContent=`약 ${t.kcal} kcal`;
   document.getElementById('eCat').textContent=`${t.label} · 총 ${t.dishes.length}품`;
-  document.getElementById('eServe').textContent=SERVE;
   document.getElementById('eMealset').innerHTML=t.dishes.map(n=>`<div class="ms-row"><span class="ms-name">${n}</span></div>`).join('');
-  const box=document.getElementById('eAllergen');box.innerHTML='';
   t.allergens.forEach(a=>{const s=document.createElement('span');s.className='chip';s.textContent='⚠ '+a;box.appendChild(s);});
   const ok=document.createElement('span');ok.className='chip ok';ok.textContent='AI 자동 태깅';box.appendChild(ok);
-  document.getElementById('eventsE').innerHTML=EVENTS.map(e=>{const cls=e.tag==='의회'?'council':e.tag==='행사'?'event':e.tag==='회의'?'meeting':'none';return `<div class="evt"><span class="evtag ${cls}">${e.tag}</span><div class="en">${e.name}<div class="et">${e.et}</div></div></div>`;}).join('');
-  document.getElementById('ptNum').textContent=state.points.toLocaleString();
 }
 function refreshVote(){const pc=Math.round(state.likes/state.total*100);document.getElementById('vtot').textContent=state.total;document.getElementById('satGauge').innerHTML=ringLight(pc,'#1D4ED8',pc+'%','만족도');}
 function vote(good){state.total++;if(good)state.likes++;refreshVote();
@@ -286,12 +297,13 @@ function renderWeek(){document.getElementById('wServe').textContent=SERVE;
     return `<div class="wcard"><div class="wc-h"><span class="wd-badge ${today?'today':''}">${w.d}</span><b>${w.label}</b>${today?'<span class="todaypill">오늘</span>':''}${w.closed?'':`<span class="wd-n">${w.dishes.length}품</span>`}</div>${body}</div>`;}).join('');
   let raf;swipe.onscroll=()=>{cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>{const cs=[...swipe.children];let best=0,bd=1e9;cs.forEach((c,j)=>{const d=Math.abs(c.offsetLeft-swipe.scrollLeft);if(d<bd){bd=d;best=j;}});[...tabs.children].forEach((b,j)=>b.classList.toggle('on',j===best));});};}
 function gotoDay(i){const swipe=document.getElementById('weekList');swipe.scrollTo({left:swipe.children[i].offsetLeft,behavior:'smooth'});[...document.getElementById('dayTabs').children].forEach((b,j)=>b.classList.toggle('on',j===i));}
-function snapWeekToday(){const swipe=document.getElementById('weekList');if(swipe&&swipe.children.length)swipe.scrollLeft=swipe.children[TODAY_IDX].offsetLeft;}
+function snapWeekToday(){const swipe=document.getElementById('weekList');const i=TODAY_IDX>=0?TODAY_IDX:0;if(swipe&&swipe.children[i])swipe.scrollLeft=swipe.children[i].offsetLeft;}
 
 /* 비서 */
 const chatEl=document.getElementById('chat');
 function addMsg(who,txt){const dv=document.createElement('div');dv.className='msg '+who;dv.innerHTML=txt;chatEl.appendChild(dv);chatEl.scrollTop=chatEl.scrollHeight;}
 function botAnswer(q){const t=WEEK[TODAY_IDX];
+  if(CLOSED_TODAY&&/뭐|메뉴|나와|식단|알레르기|알러지|칼로리|열량|영양/.test(q))return `오늘은 구내식당 <b>휴무</b>입니다.${nextOpenLabel()?` 다음 급식은 <b>${nextOpenLabel()}</b>이에요.`:''}`;
   if(/뭐|메뉴|나와|식단/.test(q))return `오늘(${t.label}) 식단은 <b>${t.dishes.join(', ')}</b> 입니다. 배식은 <b>${SERVE}~</b>예요.`;
   if(/붐|혼잡|줄|대기|한산/.test(q))return `현재 시간대는 붐빌 수 있어요. <b>11:35</b> 배식 직후나 <b>13:00</b>에 오시면 대기 없이 드실 수 있습니다.`;
   if(/행사|의회|일정/.test(q))return `오늘 청사 일정은 <b>${EVENTS.map(e=>e.name).join('</b>, <b>')}</b> 입니다.`;
@@ -300,7 +312,9 @@ function botAnswer(q){const t=WEEK[TODAY_IDX];
   if(/배식|몇시|시간/.test(q))return `오늘 배식시간은 <b>${SERVE}~</b> 입니다.`;
   if(/포인트|적립|point/i.test(q))return `만족도 투표에 참여하면 하루 <b>+10P</b>가 적립돼요. 모인 포인트는 구내식당 이벤트에 사용할 수 있습니다.`;
   return '식단·혼잡도·행사일정·알레르기에 대해 물어봐 주세요. 예) "오늘 뭐 나와?"';}
-function buildContext(){const t=WEEK[TODAY_IDX];return {식당:'세종시청 본청 구내식당',오늘:t.label,배식시간:SERVE+'~',오늘의_식단:t.dishes.join(', '),알레르기:t.allergens.join(', '),한끼_칼로리:'약 '+t.kcal+'kcal',청사_일정:EVENTS.map(e=>e.name).join(', '),혼잡_안내:'12시 전후가 가장 붐빔. 11:35 배식 직후나 13:00이 한산',만족도_포인트:'만족도 투표 시 하루 +10P 적립'};}
+function buildContext(){const dt=new Date(),WD=['일','월','화','수','목','금','토'];
+  if(CLOSED_TODAY)return {식당:'세종시청 본청 구내식당',오늘:`${dt.getMonth()+1}월 ${dt.getDate()}일 ${WD[dt.getDay()]}요일`,운영여부:'오늘은 구내식당 휴무입니다',다음_급식:nextOpenLabel(),배식시간:SERVE+'~',청사_일정:EVENTS.map(e=>e.name).join(', ')};
+  const t=WEEK[TODAY_IDX];return {식당:'세종시청 본청 구내식당',오늘:`${dt.getMonth()+1}월 ${dt.getDate()}일 ${WD[dt.getDay()]}요일`,오늘의_식단:t.dishes.join(', '),배식시간:SERVE+'~',알레르기:t.allergens.join(', '),한끼_칼로리:'약 '+t.kcal+'kcal',청사_일정:EVENTS.map(e=>e.name).join(', '),혼잡_안내:'12시 전후가 가장 붐빔. 11:35 배식 직후나 13:00이 한산',만족도_포인트:'만족도 투표 시 하루 +10P 적립'};}
 function llmFmt(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>');}
 function setLLM(ok){const el=document.getElementById('llmSrc');if(!el)return;if(ok){el.textContent='🟢 Gemini 연동';el.style.background='#F0FDF4';el.style.color='var(--ok)';el.style.borderColor='#BBF7D0';}else{el.textContent='기본 응답(오프라인)';}}
 function addTyping(){const dv=document.createElement('div');dv.className='msg bot';dv.textContent='···';chatEl.appendChild(dv);chatEl.scrollTop=chatEl.scrollHeight;return dv;}
