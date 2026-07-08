@@ -7,18 +7,7 @@ module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') { res.status(204).end(); return; }
   if (req.method === 'GET') {
-    const K = process.env.GEMINI_API_KEY, model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
-    if (!(req.query && req.query.selftest)) { res.status(200).json({ ok: true, hasKey: !!K, model }); return; }
-    if (!K) { res.status(200).json({ error: 'no_key' }); return; }
-    try {
-      const sys = '너는 세종시청 구내식당 도우미야. 아래 정보만 근거로 친근하게 2~4문장으로 답해. 메뉴를 물으면 빠짐없이 나열해줘.\n[오늘 정보]\n' + JSON.stringify({ 오늘: '7월 8일 수요일', 오늘의_식단: '불고기마늘종비빔밥, 미역유부된장국, 가지커틀렛/칠리소스, 토마토스크램블에그, 숙주나물, 포기김치', 배식시간: '11:35~', 알레르기: '대두, 밀, 난류, 돼지고기' });
-      const u = 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + K;
-      const rr = await fetch(u, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ system_instruction: { parts: [{ text: sys }] }, contents: [{ role: 'user', parts: [{ text: '오늘 전체 메뉴 다 알려줘' }] }], generationConfig: { temperature: 0.5, maxOutputTokens: 600, thinkingConfig: { thinkingBudget: 0 } } }) });
-      const j = await rr.json();
-      const c = j && j.candidates && j.candidates[0];
-      const reply = c && c.content && c.content.parts && c.content.parts[0] && c.content.parts[0].text;
-      res.status(200).json({ status: rr.status, finishReason: c && c.finishReason, reply: reply || null, raw: reply ? undefined : JSON.stringify(j).slice(0, 500) });
-    } catch (e) { res.status(200).json({ selftest_error: String((e && e.message) || e) }); }
+    res.status(200).json({ ok: true, hasKey: !!process.env.GEMINI_API_KEY, model: process.env.GEMINI_MODEL || 'gemini-2.5-flash' });
     return;
   }
   if (req.method !== 'POST') { res.status(405).json({ error: 'method_not_allowed' }); return; }
