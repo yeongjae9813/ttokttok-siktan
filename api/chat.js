@@ -3,9 +3,22 @@
 // 키는 Vercel 환경변수 GEMINI_API_KEY 에 저장 (코드에 노출 X)
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') { res.status(204).end(); return; }
+  if (req.method === 'GET') {
+    const hasKey = !!process.env.GEMINI_API_KEY;
+    const gmodel = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
+    if (!(req.query && req.query.test)) { res.status(200).json({ ok: true, hasKey: hasKey, model: gmodel, node: process.version }); return; }
+    if (!hasKey) { res.status(200).json({ hasKey: false, model: gmodel }); return; }
+    try {
+      const u = 'https://generativelanguage.googleapis.com/v1beta/models/' + gmodel + ':generateContent?key=' + process.env.GEMINI_API_KEY;
+      const rr = await fetch(u, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: '안녕이라고 한 단어로 답해줘' }] }] }) });
+      const tt = await rr.text();
+      res.status(200).json({ hasKey: true, model: gmodel, gemini_status: rr.status, gemini_body: tt.slice(0, 600) });
+    } catch (e) { res.status(200).json({ hasKey: true, model: gmodel, fetch_error: String((e && e.message) || e) }); }
+    return;
+  }
   if (req.method !== 'POST') { res.status(405).json({ error: 'method_not_allowed' }); return; }
 
   const KEY = process.env.GEMINI_API_KEY;
