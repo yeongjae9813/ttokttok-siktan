@@ -7,7 +7,18 @@ module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') { res.status(204).end(); return; }
   if (req.method === 'GET') {
-    res.status(200).json({ ok: true, hasKey: !!process.env.GEMINI_API_KEY, model: process.env.GEMINI_MODEL || 'gemini-2.5-flash' });
+    const K = process.env.GEMINI_API_KEY;
+    const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+    if (!(req.query && req.query.selftest)) { res.status(200).json({ ok: true, hasKey: !!K, model }); return; }
+    if (!K) { res.status(200).json({ error: 'no_key' }); return; }
+    try {
+      const sys = '너는 세종시청 구내식당 도우미야. 아래 정보만 근거로 1문장으로 답해. 정보: 오늘 수요일, 식단은 불고기마늘종비빔밥·미역유부된장국·가지커틀렛, 배식 11:35~';
+      const u = 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + K;
+      const rr = await fetch(u, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ system_instruction: { parts: [{ text: sys }] }, contents: [{ role: 'user', parts: [{ text: '오늘 뭐 나와?' }] }], generationConfig: { temperature: 0.4, maxOutputTokens: 200 } }) });
+      const j = await rr.json();
+      const reply = j && j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts && j.candidates[0].content.parts[0] && j.candidates[0].content.parts[0].text;
+      res.status(200).json({ status: rr.status, reply: reply || null, raw: reply ? undefined : JSON.stringify(j).slice(0, 400) });
+    } catch (e) { res.status(200).json({ selftest_error: String((e && e.message) || e) }); }
     return;
   }
   if (req.method !== 'POST') { res.status(405).json({ error: 'method_not_allowed' }); return; }
