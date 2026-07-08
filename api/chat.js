@@ -7,7 +7,19 @@ module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') { res.status(204).end(); return; }
   if (req.method === 'GET') {
-    res.status(200).json({ ok: true, hasKey: !!process.env.GEMINI_API_KEY, model: process.env.GEMINI_MODEL || 'gemini-2.5-flash' });
+    const K = process.env.GEMINI_API_KEY, model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+    if (!(req.query && req.query.selftest)) { res.status(200).json({ ok: true, hasKey: !!K, model }); return; }
+    if (!K) { res.status(200).json({ error: 'no_key' }); return; }
+    try {
+      const ctx = { 오늘: '7월 8일 수요일', 이번주_식단: '월요일: 돼지안심스테이크 등 | 화요일: 제육 등 | 수요일: 불고기마늘종비빔밥 등 | 목요일: 찰흑미밥, 사골콩나물우거지국, 닭고기카레강정, 건파래볶음, 상추된장무침, 총각김치 | 금요일: 구내식당 휴무', 배식시간: '11:35~' };
+      const sys = '너는 세종시청 구내식당 도우미야. 아래 [정보]만 근거로 2~4문장으로 답해. 내일/특정 요일 메뉴는 오늘 요일 기준으로 이번주_식단에서 찾아 답해줘.\n[정보]\n' + JSON.stringify(ctx);
+      const u = 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + K;
+      const rr = await fetch(u, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ system_instruction: { parts: [{ text: sys }] }, contents: [{ role: 'user', parts: [{ text: '내일 메뉴 뭔지 알아?' }] }], generationConfig: { temperature: 0.4, maxOutputTokens: 600, thinkingConfig: { thinkingBudget: 0 } } }) });
+      const j = await rr.json();
+      const c = j && j.candidates && j.candidates[0];
+      const reply = c && c.content && c.content.parts && c.content.parts[0] && c.content.parts[0].text;
+      res.status(200).json({ status: rr.status, finishReason: c && c.finishReason, reply: reply || null });
+    } catch (e) { res.status(200).json({ selftest_error: String((e && e.message) || e) }); }
     return;
   }
   if (req.method !== 'POST') { res.status(405).json({ error: 'method_not_allowed' }); return; }
@@ -26,9 +38,9 @@ module.exports = async (req, res) => {
     const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
     const sys = [
       '너는 세종특별자치시 본청 구내식당 서비스 「똑똑 식판」의 친절한 식단 안내 도우미야.',
-      '아래 [오늘 정보]만 근거로 한국어로 친근하게 답해. 답변은 2~4문장.',
-      '메뉴를 물으면 오늘 식단을 빠짐없이 나열해줘. 정보에 없는 건 모른다고 솔직히 말하고 지어내지 마. 이모지는 최대 1개.',
-      '[오늘 정보]',
+      '아래 [정보]만 근거로 한국어로 친근하게 답해. 답변은 2~4문장.',
+      '메뉴는 빠짐없이 나열해줘. 내일이나 특정 요일 메뉴를 물으면 "오늘" 요일을 기준으로 "이번주_식단"에서 찾아 답해줘. 정보에 없는 건 모른다고 솔직히 말하고 지어내지 마. 이모지는 최대 1개.',
+      '[정보]',
       JSON.stringify(ctx)
     ].join('\n');
 

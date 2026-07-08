@@ -313,8 +313,10 @@ function botAnswer(q){const t=WEEK[TODAY_IDX];
   if(/포인트|적립|point/i.test(q))return `만족도 투표에 참여하면 하루 <b>+10P</b>가 적립돼요. 모인 포인트는 구내식당 이벤트에 사용할 수 있습니다.`;
   return '식단·혼잡도·행사일정·알레르기에 대해 물어봐 주세요. 예) "오늘 뭐 나와?"';}
 function buildContext(){const dt=new Date(),WD=['일','월','화','수','목','금','토'];
-  if(CLOSED_TODAY)return {식당:'세종시청 본청 구내식당',오늘:`${dt.getMonth()+1}월 ${dt.getDate()}일 ${WD[dt.getDay()]}요일`,운영여부:'오늘은 구내식당 휴무입니다',다음_급식:nextOpenLabel(),배식시간:SERVE+'~',청사_일정:EVENTS.map(e=>e.name).join(', ')};
-  const t=WEEK[TODAY_IDX];return {식당:'세종시청 본청 구내식당',오늘:`${dt.getMonth()+1}월 ${dt.getDate()}일 ${WD[dt.getDay()]}요일`,오늘의_식단:t.dishes.join(', '),배식시간:SERVE+'~',알레르기:t.allergens.join(', '),한끼_칼로리:'약 '+t.kcal+'kcal',청사_일정:EVENTS.map(e=>e.name).join(', '),혼잡_안내:'12시 전후가 가장 붐빔. 11:35 배식 직후나 13:00이 한산',만족도_포인트:'만족도 투표 시 하루 +10P 적립'};}
+  const week=WEEK.map(w=>w.closed?`${w.label}: 구내식당 휴무`:`${w.label}: ${w.dishes.join(', ')}`).join(' | ');
+  const base={식당:'세종시청 본청 구내식당',오늘:`${dt.getMonth()+1}월 ${dt.getDate()}일 ${WD[dt.getDay()]}요일`,이번주_식단:week,배식시간:SERVE+'~',청사_일정:EVENTS.map(e=>e.name).join(', ')};
+  if(CLOSED_TODAY)return Object.assign(base,{운영여부:'오늘은 구내식당 휴무입니다',다음_급식:nextOpenLabel()});
+  const t=WEEK[TODAY_IDX];return Object.assign(base,{오늘의_식단:t.dishes.join(', '),알레르기:t.allergens.join(', '),한끼_칼로리:'약 '+t.kcal+'kcal',혼잡_안내:'12시 전후가 가장 붐빔. 11:35 배식 직후나 13:00이 한산',만족도_포인트:'만족도 투표 시 하루 +10P 적립'});}
 function llmFmt(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>');}
 function setLLM(ok){const el=document.getElementById('llmSrc');if(!el)return;if(ok){el.textContent='🟢 Gemini 연동';el.style.background='#F0FDF4';el.style.color='var(--ok)';el.style.borderColor='#BBF7D0';}else{el.textContent='기본 응답(오프라인)';}}
 function addTyping(){const dv=document.createElement('div');dv.className='msg bot';dv.textContent='···';chatEl.appendChild(dv);chatEl.scrollTop=chatEl.scrollHeight;return dv;}
