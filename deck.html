@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>똑똑 식판 · 발표자료</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root{--navy:#0E2A6B;--blue:#2563EB;--ink:#1F2A44;--gray:#5A6B87;--line:#E4E9F2;--bg:#F6F8FC;
+    --lossbg:#FBECEC;--loss:#C0392B;--good:#127A3E;--goodbg:#EAF6EF;--goodline:#CBEBD8;
+    --font:'Pretendard','Pretendard Variable','Malgun Gothic',sans-serif;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:var(--font);background:#0d1526;display:flex;align-items:center;justify-content:center;height:100vh;overflow:hidden;-webkit-font-smoothing:antialiased;color:var(--ink);}
+  #stage{width:1280px;height:720px;transform-origin:center;position:relative;}
+  .slide{position:absolute;inset:0;background:#fff;display:none;flex-direction:column;padding:52px 64px 56px;overflow:hidden;}
+  .slide.on{display:flex;animation:f .35s ease;}
+  @keyframes f{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  .topbar{position:absolute;top:0;left:0;height:6px;width:100%;background:var(--navy);}
+  .sect{display:flex;align-items:center;gap:12px;}
+  .sect .no{font-size:15px;font-weight:800;color:#fff;background:var(--navy);width:34px;height:34px;border-radius:9px;display:grid;place-items:center;}
+  .sect .nm{font-size:16px;font-weight:800;color:var(--navy);letter-spacing:.4px;}
+  h1{font-size:38px;font-weight:800;color:var(--ink);letter-spacing:-1px;margin-top:18px;line-height:1.22;}
+  h1 .u{color:var(--blue);}
+  .lead{font-size:17.5px;color:var(--gray);margin-top:11px;line-height:1.6;font-weight:500;}
+  .foot{position:absolute;left:64px;right:64px;bottom:24px;display:flex;align-items:center;gap:9px;font-size:12.5px;color:#98A6BE;font-weight:600;border-top:1px solid var(--line);padding-top:11px;}
+  .foot img{height:16px;opacity:.85;} .foot .pg{margin-left:auto;font-weight:800;color:var(--gray);}
+  svg{fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
+  .ico{border-radius:13px;display:grid;place-items:center;flex:none;}
+  .ico.nv{background:#E7ECF6;} .ico.nv svg{stroke:var(--navy);}
+  .ico.bl{background:#E9F0FE;} .ico.bl svg{stroke:var(--blue);}
+  .ico.rd{background:var(--lossbg);} .ico.rd svg{stroke:var(--loss);}
+  b.hi{color:var(--ink);font-weight:800;}
+
+  /* 표지 */
+  .cover{background:#fff;justify-content:center;padding:0 80px;}
+  .cover .lgb{display:inline-flex;align-items:center;gap:14px;padding-bottom:8px;}
+  .cover .lgb img{height:40px;}
+  .cover h1{font-size:76px;letter-spacing:-2.5px;margin:0;}
+  .cover .def{font-size:24px;font-weight:600;color:var(--gray);margin-top:22px;line-height:1.5;}
+  .cover .def b{color:var(--navy);font-weight:800;}
+  .cover .meta{display:flex;gap:26px;margin-top:40px;font-size:15px;color:var(--gray);font-weight:600;}
+  .cover .meta span{display:flex;align-items:center;gap:8px;} .cover .meta svg{width:18px;height:18px;stroke:var(--navy);}
+  .cover .rule{width:60px;height:5px;background:var(--navy);border-radius:3px;margin:34px 0;}
+  .cover .proto{position:absolute;top:40px;right:64px;font-size:12.5px;font-weight:700;color:var(--gray);background:var(--bg);border:1px solid var(--line);padding:7px 14px;border-radius:999px;}
+
+  /* 목차 */
+  .toc{display:flex;flex-direction:column;gap:0;margin-top:30px;flex:1;justify-content:center;}
+  .tr{display:flex;align-items:center;gap:24px;padding:19px 8px;border-bottom:1px solid var(--line);}
+  .tr:last-child{border-bottom:none;}
+  .tr .tn{font-size:26px;font-weight:800;color:#C3CFE4;width:52px;flex:none;font-variant-numeric:tabular-nums;}
+  .tr .tt{font-size:23px;font-weight:800;color:var(--navy);width:230px;flex:none;}
+  .tr .td{font-size:16.5px;color:var(--gray);font-weight:500;}
+  .tr .tico{margin-left:auto;width:44px;height:44px;} .tr .tico svg{width:24px;height:24px;stroke:var(--blue);}
+
+  /* 문제(정책) */
+  .flow{display:flex;align-items:stretch;gap:20px;margin-top:26px;}
+  .now{flex:0 0 290px;background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:24px;display:flex;flex-direction:column;}
+  .now .ico{width:50px;height:50px;} .now .ico svg{width:26px;height:26px;}
+  .now h3{font-size:20px;font-weight:800;margin-top:15px;} .now p{font-size:15px;color:var(--gray);line-height:1.6;margin-top:9px;}
+  .now .badge{margin-top:auto;font-size:13.5px;font-weight:700;color:var(--navy);background:#fff;border:1px solid var(--line);border-radius:9px;padding:10px 12px;line-height:1.45;}
+  .arrowcol{display:flex;align-items:center;color:#C3CDDF;font-size:28px;font-weight:800;}
+  .conseq{flex:1;display:flex;flex-direction:column;gap:16px;}
+  .cbox{flex:1;background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px 24px;display:flex;align-items:center;gap:20px;box-shadow:0 8px 20px rgba(20,40,90,.05);}
+  .cbox .ico{width:50px;height:50px;} .cbox .ico svg{width:26px;height:26px;}
+  .cbox h4{font-size:19px;font-weight:800;} .cbox p{font-size:15px;color:var(--gray);line-height:1.55;margin-top:5px;}
+  .cbox .big{margin-left:auto;font-size:14.5px;font-weight:800;color:var(--loss);background:var(--lossbg);padding:8px 14px;border-radius:999px;white-space:nowrap;flex:none;}
+  .vslabel{font-size:13.5px;font-weight:800;color:var(--navy);margin:22px 0 0;}
+  .valuestrip{display:flex;gap:12px;margin-top:12px;}
+  .vs{flex:1;display:flex;align-items:center;gap:11px;background:var(--navy);color:#fff;border-radius:13px;padding:15px 18px;}
+  .vs svg{width:22px;height:22px;stroke:#9DBBF6;flex:none;} .vs b{font-size:16px;font-weight:700;}
+
+  /* 해결 개요 */
+  .soln{display:flex;gap:36px;margin-top:24px;flex:1;align-items:center;}
+  .soln .lft{flex:1;}
+  .soln .oneliner{font-size:23px;line-height:1.5;color:var(--ink);font-weight:600;}
+  .soln .oneliner b{color:var(--blue);font-weight:800;}
+  .roles{display:flex;gap:14px;margin-top:26px;}
+  .role{flex:1;background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:0 6px 16px rgba(20,40,90,.05);}
+  .role .rh{display:flex;align-items:center;gap:10px;} .role .ico{width:40px;height:40px;} .role .ico svg{width:22px;height:22px;}
+  .role .rh b{font-size:16px;font-weight:800;color:var(--navy);}
+  .role p{font-size:14px;color:var(--gray);margin-top:10px;line-height:1.5;}
+  .soln .rgt{flex:0 0 380px;display:flex;gap:16px;justify-content:center;}
+  .soln .rgt .pic{flex:1;max-width:180px;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--bg);box-shadow:0 10px 24px rgba(20,40,90,.08);}
+  .soln .rgt .pic img{width:100%;display:block;}
+  .soln .rgt .cap{text-align:center;font-size:13px;font-weight:700;color:var(--gray);margin-top:8px;}
+
+  /* AI 3단계 */
+  .steps{display:flex;align-items:stretch;margin-top:26px;}
+  .st{flex:1;background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px 22px;box-shadow:0 8px 20px rgba(20,40,90,.05);}
+  .st .ico{width:50px;height:50px;margin-bottom:14px;} .st .ico svg{width:26px;height:26px;}
+  .st .n{font-size:12.5px;font-weight:800;color:var(--blue);}
+  .st h4{font-size:20px;font-weight:800;margin-top:5px;} .st p{font-size:14.5px;color:var(--gray);line-height:1.6;margin-top:9px;}
+  .stArrow{display:flex;align-items:center;padding:0 12px;color:#C3CDDF;font-size:24px;font-weight:800;}
+  .diff{margin-top:24px;background:var(--goodbg);border:1px solid var(--goodline);border-radius:16px;padding:20px 26px;}
+  .diff .h{font-size:16px;font-weight:800;color:var(--good);display:flex;align-items:center;gap:9px;} .diff .h svg{width:20px;height:20px;stroke:var(--good);stroke-width:2.2;}
+  .diff .row{display:flex;gap:34px;margin-top:13px;} .diff .row div{font-size:15.5px;color:var(--ink);font-weight:600;line-height:1.5;} .diff .row b{color:var(--good);font-weight:800;}
+
+  /* AI 활용 지도 */
+  .aimap{display:flex;gap:22px;margin-top:22px;}
+  .col{flex:1;display:flex;flex-direction:column;}
+  .colh{display:flex;align-items:center;gap:10px;margin-bottom:13px;}
+  .colh .pill{font-size:13px;font-weight:800;color:#fff;padding:5px 14px;border-radius:999px;}
+  .colh .pill.op{background:var(--navy);} .colh .pill.us{background:var(--blue);}
+  .colh span{font-size:13.5px;color:var(--gray);font-weight:600;}
+  .aicard{background:#fff;border:1px solid var(--line);border-radius:13px;padding:15px 16px;box-shadow:0 6px 16px rgba(20,40,90,.05);display:flex;gap:13px;margin-bottom:12px;}
+  .aicard .ico{width:42px;height:42px;} .aicard .ico svg{width:22px;height:22px;}
+  .aicard b{font-size:16px;font-weight:800;color:var(--ink);}
+  .aicard p{font-size:13px;color:var(--gray);line-height:1.5;margin-top:4px;}
+  .aicard .hil{color:var(--good);font-weight:800;font-size:11.5px;background:var(--goodbg);border:1px solid var(--goodline);padding:2px 8px;border-radius:999px;display:inline-block;margin-top:7px;}
+  .aicommon{margin-top:4px;background:var(--navy);color:#fff;border-radius:13px;padding:14px 22px;display:flex;align-items:center;gap:22px;}
+  .aicommon .cap{font-size:13px;font-weight:800;color:#9DBBF6;}
+  .aicommon .it{font-size:14.5px;font-weight:600;}
+  .aicommon .it b{font-weight:800;color:#fff;}
+
+  /* 예측 근거 */
+  .why{display:flex;gap:34px;margin-top:22px;flex:1;}
+  .factors{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:12px;align-content:start;}
+  .fac{display:flex;align-items:center;gap:13px;background:#fff;border:1px solid var(--line);border-radius:13px;padding:13px 15px;}
+  .fac .ico{width:40px;height:40px;} .fac .ico svg{width:21px;height:21px;}
+  .fac b{font-size:15.5px;font-weight:800;color:var(--navy);display:block;} .fac span{font-size:13px;color:var(--gray);}
+  .why .side{flex:0 0 300px;display:flex;flex-direction:column;gap:14px;}
+  .why .shot{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--bg);flex:1;}
+  .why .shot img{width:100%;display:block;}
+  .why .quote{background:#EAF0FE;border-radius:13px;padding:15px 17px;font-size:14px;color:var(--ink);line-height:1.55;}
+  .why .quote b{color:var(--blue);}
+
+  /* AI 역량 지도 (전방위) */
+  .aicat{display:flex;gap:13px;margin-top:20px;}
+  .acol{flex:1;background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 15px;box-shadow:0 8px 20px rgba(20,40,90,.05);display:flex;flex-direction:column;}
+  .acol .ch{display:flex;align-items:center;gap:9px;margin-bottom:13px;padding-bottom:11px;border-bottom:1px solid var(--line);}
+  .acol .ch .cico{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;flex:none;} .acol .ch .cico svg{width:19px;height:19px;}
+  .acol .ch b{font-size:14.5px;font-weight:800;color:var(--navy);}
+  .acol .ch .cn{margin-left:auto;font-size:10.5px;font-weight:800;color:var(--gray);background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:2px 8px;}
+  .afeat{display:flex;gap:9px;margin-bottom:12px;} .afeat:last-child{margin-bottom:0;}
+  .afeat .dot{width:19px;height:19px;border-radius:6px;background:var(--goodbg);display:grid;place-items:center;flex:none;margin-top:1px;} .afeat .dot svg{width:12px;height:12px;stroke:var(--good);stroke-width:2.6;}
+  .afeat .ft b{font-size:13px;font-weight:800;color:var(--ink);display:block;line-height:1.3;}
+  .afeat .ft span{font-size:11px;color:var(--gray);line-height:1.35;display:block;margin-top:2px;}
+  .afeat .ft .tagm{font-size:9.5px;font-weight:800;color:var(--blue);background:#EAF0FE;border-radius:999px;padding:1px 7px;margin-left:4px;}
+  .aiband{margin-top:16px;background:var(--navy);color:#fff;border-radius:14px;padding:15px 22px;display:flex;align-items:center;gap:14px;}
+  .aiband .bt{font-size:15px;font-weight:800;} .aiband .bt b{color:#8EC5FF;}
+  .aiband .tags{margin-left:auto;display:flex;gap:8px;} .aiband .tags span{font-size:12px;font-weight:700;background:rgba(255,255,255,.14);border:1px solid rgba(180,205,255,.4);border-radius:999px;padding:5px 12px;}
+
+  /* 앱 갤러리 */
+  .gallery{display:flex;gap:18px;margin-top:22px;flex:1;justify-content:center;}
+  .phone{flex:1;max-width:250px;display:flex;flex-direction:column;}
+  .phone .pic{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--bg);box-shadow:0 8px 20px rgba(20,40,90,.06);}
+  .phone .pic img{width:100%;display:block;}
+  .phone .cap{text-align:center;margin-top:11px;}
+  .phone .cap b{display:block;font-size:16px;font-weight:800;color:var(--navy);}
+  .phone .cap span{font-size:13px;color:var(--gray);}
+  .loopbar{margin-top:18px;background:var(--navy);color:#fff;border-radius:13px;padding:14px 22px;font-size:16px;font-weight:600;display:flex;align-items:center;gap:11px;}
+  .loopbar svg{width:22px;height:22px;stroke:#9DBBF6;flex:none;} .loopbar b{font-weight:800;color:#fff;}
+
+  /* 기대효과 / 현실가능성 카드 */
+  .kpis{display:flex;gap:12px;margin-top:22px;}
+  .kc{flex:1;background:var(--navy);color:#fff;border-radius:14px;padding:15px 18px;}
+  .kc .v{font-size:27px;font-weight:800;letter-spacing:-.5px;} .kc .l{font-size:12.5px;color:#B7C8EC;margin-top:3px;font-weight:600;}
+  .effs{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px;}
+  .eff{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 20px;box-shadow:0 6px 16px rgba(20,40,90,.05);}
+  .eff .eh{display:flex;align-items:center;gap:10px;} .eff .ico{width:38px;height:38px;} .eff .ico svg{width:20px;height:20px;}
+  .eff .eh b{font-size:16.5px;font-weight:800;color:var(--navy);}
+  .eff p{font-size:14px;color:var(--gray);line-height:1.55;margin-top:9px;}
+  .eff .f{font-size:12.5px;color:var(--ink);background:var(--bg);border:1px dashed #C9D5EA;border-radius:8px;padding:7px 10px;margin-top:9px;font-weight:600;}
+  .eff .demo{font-size:11.5px;font-weight:800;color:var(--good);background:var(--goodbg);border:1px solid var(--goodline);padding:3px 10px;border-radius:999px;display:inline-block;margin-top:9px;}
+
+  /* 로드맵 */
+  .rm{display:grid;grid-template-columns:1fr 1fr;gap:11px 30px;margin-top:24px;}
+  .ri{display:flex;align-items:flex-start;gap:14px;padding:11px 4px;border-bottom:1px solid var(--line);}
+  .ri .rn{width:30px;height:30px;border-radius:9px;background:#E9F0FE;color:var(--blue);display:grid;place-items:center;font-size:14px;font-weight:800;flex:none;}
+  .ri b{font-size:16px;font-weight:800;color:var(--navy);} .ri span{font-size:13.5px;color:var(--gray);display:block;margin-top:2px;line-height:1.4;}
+  .closing{margin-top:20px;background:var(--navy);color:#fff;border-radius:16px;padding:22px 28px;display:flex;align-items:center;gap:16px;}
+  .closing svg{width:30px;height:30px;stroke:#9DBBF6;flex:none;}
+  .closing b{font-size:24px;font-weight:800;letter-spacing:-.5px;} .closing span{font-size:14px;color:#B7C8EC;display:block;margin-top:4px;}
+  /* 큰 강조 카드 (현실가능성) */
+  .eff.big{padding:22px 24px;} .eff.big .eh .ico{width:46px;height:46px;} .eff.big .eh .ico svg{width:24px;height:24px;}
+  .eff.big .eh b{font-size:20px;} .eff.big p{font-size:15px;line-height:1.6;margin-top:12px;}
+  /* 작은 화살표 로드맵 */
+  .rmini{margin-top:20px;background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:16px 20px;}
+  .rmini .rl{font-size:12.5px;font-weight:800;color:var(--navy);margin-bottom:11px;display:flex;align-items:center;gap:7px;}
+  .rmini .rl svg{width:16px;height:16px;stroke:var(--blue);}
+  .rmflow{display:flex;align-items:stretch;}
+  .rmstep{flex:1;background:#fff;border:1px solid var(--line);border-radius:11px;padding:11px 6px;text-align:center;}
+  .rmstep b{font-size:13.5px;font-weight:800;color:var(--ink);display:block;} .rmstep span{font-size:10.5px;color:var(--gray);display:block;margin-top:2px;}
+  .rmarrow{display:flex;align-items:center;padding:0 9px;color:var(--blue);font-weight:800;font-size:17px;}
+  /* 마무리 */
+  .endwrap{flex:1;display:flex;flex-direction:column;justify-content:center;}
+  .endwrap h1{font-size:46px;} .endwrap .lead{font-size:19px;margin-top:16px;line-height:1.6;}
+
+  /* 네비 */
+  .nav{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:13px;background:rgba(14,25,45,.7);backdrop-filter:blur(8px);padding:8px 15px;border-radius:999px;z-index:100;border:1px solid rgba(255,255,255,.12);}
+  .nav button{all:unset;cursor:pointer;color:#fff;font-size:16px;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.12);}
+  .nav button:hover{background:rgba(255,255,255,.25);}
+  .dots{display:flex;gap:6px;} .dots i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.3);cursor:pointer;transition:.2s;} .dots i.on{background:#8EC5FF;width:20px;border-radius:4px;}
+  .nav .cnt{color:#CFE0FF;font-size:12px;font-weight:700;min-width:44px;text-align:center;}
+  .help{position:fixed;top:12px;right:14px;z-index:100;font-size:11.5px;color:rgba(255,255,255,.45);}
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- 1. 표지 -->
+  <section class="slide cover on">
+    <div class="topbar"></div>
+    <span class="proto">아이디어 제안 · 시연용 프로토타입</span>
+    <div class="lgb"><img src="assets/logo.png" alt="세종특별자치시" onerror="this.style.display='none'"></div>
+    <div class="rule"></div>
+    <h1>똑똑 식판</h1>
+    <div class="def"><b>내일 점심 몇 명이 올지</b> 예측해 주는<br>AI 구내식당 서비스</div>
+    <div class="meta">
+      <span><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></svg>공무원 AI 행정혁신 우수사례·아이디어 공모</span>
+      <span><svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6"/></svg>세종특별자치시 본청 구내식당</span>
+    </div>
+    <div class="foot" style="border:none;color:#B7C2D6"><span>세종특별자치시 · 똑똑 식판</span><span class="pg">01</span></div>
+  </section>
+
+  <!-- 2. 목차 -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="sect"><span class="no" style="background:#C3CFE4">·</span><span class="nm">발표 순서</span></div>
+    <h1>오늘 이 순서로 말씀드립니다</h1>
+    <div class="toc">
+      <div class="tr"><span class="tn">01</span><span class="tt">왜 필요한가</span><span class="td">경험과 감에만 기대기 어려운 이유</span><span class="tico"><svg viewBox="0 0 24 24"><path d="M12 9v4m0 4h.01M10.3 3.9l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-3l-8-14a2 2 0 0 0-3.4 0z"/></svg></span></div>
+      <div class="tr"><span class="tn">02</span><span class="tt">무엇인가</span><span class="td">내일 점심 인원을 예보하는 AI 서비스</span><span class="tico"><svg viewBox="0 0 24 24"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3zM12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg></span></div>
+      <div class="tr"><span class="tn">03</span><span class="tt">AI가 하는 일</span><span class="td">수요 예측 + 메뉴 구성 + 대화형 비서, 곳곳의 AI</span><span class="tico"><svg viewBox="0 0 24 24"><rect x="5" y="7" width="14" height="12" rx="2"/><path d="M9 7V4h6v3M9 12h.01M15 12h.01M9 16h6"/></svg></span></div>
+      <div class="tr"><span class="tn">04</span><span class="tt">실제 화면</span><span class="td">영양사 앱 · 직원 앱 작동 데모</span><span class="tico"><svg viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="2"/><path d="M11 18h2"/></svg></span></div>
+      <div class="tr"><span class="tn">05</span><span class="tt">기대효과 · 현실 가능성</span><span class="td">예산·탄소·복지, 그리고 지금 만들 수 있는 이유</span><span class="tico"><svg viewBox="0 0 24 24"><path d="M5 20V10M12 20V4M19 20v-7"/></svg></span></div>
+    </div>
+    <div class="foot"><img src="assets/logo.png" onerror="this.style.display='none'"><span>발표 순서</span><span class="pg">02</span></div>
+  </section>
+
+  <!-- 3. 왜 필요한가 -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="sect"><span class="no">01</span><span class="nm">왜 필요한가</span></div>
+    <h1>경험과 감에만 기대기엔, <span class="u">변수가 너무 많습니다</span></h1>
+    <div class="lead">요일·날씨·메뉴·근무 인원까지 — 내일 몇 명이 올지 사람이 매일 정확히 가늠하기는 쉽지 않습니다.</div>
+    <div class="flow">
+      <div class="now">
+        <div class="ico nv"><svg viewBox="0 0 24 24"><path d="M12 3v3M5 8h14l-1.5 11a2 2 0 0 1-2 1.8H8.5a2 2 0 0 1-2-1.8L5 8z"/><path d="M9 12v5M15 12v5"/></svg></div>
+        <h3>지금 · 경험에 의존</h3>
+        <p>요일·날씨·메뉴·연가·출장까지 매일 사람이 종합 판단하기는 어렵습니다.</p>
+        <div class="badge">식수 데이터는 매일 쌓이지만<br>활용되지 못합니다</div>
+      </div>
+      <div class="arrowcol">›</div>
+      <div class="conseq">
+        <div class="cbox">
+          <div class="ico rd"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 12a2 2 0 0 0 2 1.8h6a2 2 0 0 0 2-1.8L20 7"/></svg></div>
+          <div><h4>많이 만들면 → 남은 음식</h4><p>버려지는 잔반이 곧 식자재비·처리비·탄소 낭비입니다.</p></div>
+          <span class="big">예산 낭비</span>
+        </div>
+        <div class="cbox">
+          <div class="ico rd"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
+          <div><h4>적게 만들면 → 음식 부족</h4><p>메뉴 소진·급한 변경으로 직원 만족도가 떨어집니다.</p></div>
+          <span class="big">이용자 불만</span>
+        </div>
+      </div>
+    </div>
+    <div class="vslabel">＊ 이 문제를 풀면 얻는 공공가치</div>
+    <div class="valuestrip">
+      <div class="vs"><svg viewBox="0 0 24 24"><path d="M12 3v18M7 7h7a3 3 0 0 1 0 6H7m0 0h10"/></svg><b>예산 절감</b></div>
+      <div class="vs"><svg viewBox="0 0 24 24"><path d="M12 21c5-3 8-7 8-12a8 8 0 0 0-16 0c0 5 3 9 8 12z"/><path d="M12 21V9"/></svg><b>탄소 감축</b></div>
+      <div class="vs"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg><b>이용자 만족</b></div>
+      <div class="vs"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v12c0 1.7 3 3 7 3s7-1.3 7-3V6M5 12c0 1.7 3 3 7 3s7-1.3 7-3"/></svg><b>데이터기반행정</b></div>
+    </div>
+    <div class="foot"><img src="assets/logo.png" onerror="this.style.display='none'"><span>왜 필요한가</span><span class="pg">03</span></div>
+  </section>
+
+  <!-- 4. 무엇인가 -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="sect"><span class="no">02</span><span class="nm">무엇인가</span></div>
+    <h1>내일 점심 인원을 <span class="u">미리 예보</span>하는 AI 서비스</h1>
+    <div class="soln">
+      <div class="lft">
+        <div class="oneliner">과거 식수와 <b>메뉴·날씨·근무 인원</b>을 학습한 AI가 <b>내일 점심 식수를 예측</b>하고, 두 사람에게 필요한 정보를 나눠 줍니다.</div>
+        <div class="roles">
+          <div class="role">
+            <div class="rh"><div class="ico nv"><svg viewBox="0 0 24 24"><path d="M6 20a6 6 0 0 1 12 0M12 4a4 4 0 1 1 0 8 4 4 0 0 1 0-8z"/></svg></div><b>영양사에게</b></div>
+            <p>몇 인분 만들지(적정 조리량)와 그 근거를 알려줍니다.</p>
+          </div>
+          <div class="role">
+            <div class="rh"><div class="ico bl"><svg viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="2"/><path d="M11 18h2"/></svg></div><b>직원에게</b></div>
+            <p>오늘의 식단·붐비는 시간·만족도 투표를 제공합니다.</p>
+          </div>
+        </div>
+      </div>
+      <div class="rgt">
+        <div><div class="pic"><img src="assets/op_home.png" alt=""></div><div class="cap">영양사 앱</div></div>
+        <div><div class="pic"><img src="assets/us_today.png" alt=""></div><div class="cap">직원 앱</div></div>
+      </div>
+    </div>
+    <div class="foot"><img src="assets/logo.png" onerror="this.style.display='none'"><span>무엇인가</span><span class="pg">04</span></div>
+  </section>
+
+  <!-- 5. AI가 하는 일 (핵심 3단계) -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="sect"><span class="no">03</span><span class="nm">AI가 하는 일</span></div>
+    <h1>일기예보처럼, <span class="u">내일 점심 인원을 예보</span>합니다</h1>
+    <div class="lead">먼저, 예측이 어떻게 이뤄지는지 — AI의 핵심 흐름은 세 단계입니다.</div>
+    <div class="steps">
+      <div class="st">
+        <div class="ico bl"><svg viewBox="0 0 24 24"><path d="M12 3v10m0 0l-4-4m4 4l4-4"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg></div>
+        <div class="n">STEP 1</div><h4>모으기</h4>
+        <p>근무 인원·날씨·메뉴·일정을 <b class="hi">사람 손 없이 자동</b>으로 모읍니다.</p>
+      </div>
+      <div class="stArrow">›</div>
+      <div class="st">
+        <div class="ico bl"><svg viewBox="0 0 24 24"><rect x="5" y="7" width="14" height="12" rx="2"/><path d="M9 7V4h6v3M9 12h.01M15 12h.01M9 16h6"/></svg></div>
+        <div class="n">STEP 2</div><h4>예측하기</h4>
+        <p>과거 패턴을 학습한 AI가 내일 식수를 계산하고, <b class="hi">그 이유까지 설명</b>합니다.</p>
+      </div>
+      <div class="stArrow">›</div>
+      <div class="st">
+        <div class="ico bl"><svg viewBox="0 0 24 24"><path d="M6 9a6 6 0 1 1 12 0c0 5 2 6 2 7H4c0-1 2-2 2-7z"/><path d="M10 21a2 2 0 0 0 4 0"/></svg></div>
+        <div class="n">STEP 3</div><h4>알려주기</h4>
+        <p>영양사에겐 <b class="hi">적정 조리량</b>, 직원에겐 <b class="hi">식단·혼잡도</b>를 안내합니다.</p>
+      </div>
+    </div>
+    <div class="diff">
+      <div class="h"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg> 단순 평균·규칙과 다른 점 — AI 활용의 핵심</div>
+      <div class="row">
+        <div><b>처음 나오는 새 메뉴</b>도 비슷한 메뉴로 예측</div>
+        <div><b>왜 그런지</b> 사람 말로 근거를 설명</div>
+        <div>쓸수록 <b>매일 스스로 똑똑</b>해짐</div>
+      </div>
+    </div>
+    <div class="foot"><img src="assets/logo.png" onerror="this.style.display='none'"><span>AI가 하는 일 · 예측 흐름</span><span class="pg">05</span></div>
+  </section>
+
+  <!-- 6. AI 활용 지도 -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="sect"><span class="no">03</span><span class="nm">AI가 하는 일</span></div>
+    <h1>예측은 시작일 뿐 — <span class="u">AI가 서비스 곳곳에서</span> 일합니다</h1>
+    <div class="aicat">
+      <div class="acol">
+        <div class="ch"><span class="cico ico nv"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg></span><b>이해하기</b><span class="cn">2</span></div>
+        <div class="afeat"><span class="dot"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span><div class="ft"><b>메뉴 자동 분류</b><span>'함박스테이크'→ 메인·육류 + 인기점수</span></div></div>
+        <div class="afeat"><span class="dot"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span><div class="ft"><b>알레르기·원산지 자동 태깅</b><span>식단 글에서 성분을 자동 추출</span></div></div>
+      </div>
+      <div class="acol">
+        <div class="ch"><span class="cico ico bl"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M7 15l3-3 3 2 4-5"/></svg></span><b>예측하기</b><span class="cn">3</span></div>
+        <div class="afeat"><span class="dot"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span><div class="ft"><b>익일 식수 예측</b><span>내일 점심 인원을 미리 예보 <span class="tagm">핵심</span></span></div></div>
+        <div class="afeat"><span class="dot"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span><div class="ft"><b>신메뉴 인기 추정</b><span>처음 나오는 메뉴도 유사메뉴로 <span class="tagm">임베딩</span></span></div></div>
+        <div class="afeat"><span class="dot"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span><div class="ft"><b>시간대 혼잡도 예측</b><span>붐비는 시간을 미리 안내</span></div></div>
+      </div>
+      <div class="acol">
+        <div class="ch"><span class="cico ico nv"><svg viewBox="0 0 24 24"><path d="M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8z"/></svg></span><b>제안·소통하기</b><span class="cn">3</span></div>
+        <div class="afeat"><span class="dot"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span><div class="ft"><b>AI 식단 구성 추천</b><span>균형·인기·예산 반영 주간 초안 <span class="tagm">생성형</span></span></div></div>
+        <div class="afeat"><span class="dot"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span><div class="ft"><b>예측 근거 자연어 설명</b><span>"왜 이 숫자인지" 사람 말로 <span class="tagm">생성형</span></span></div></div>
+        <div class="afeat"><span class="dot"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span><div class="ft"><b>대화형 식단 비서</b><span>말로 물으면 답하는 챗봇 <span class="tagm">생성형</span></span></div></div>
+      </div>
+      <div class="acol">
+        <div class="ch"><span class="cico ico bl"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5"/></svg></span><b>스스로 성장</b><span class="cn">2</span></div>
+        <div class="afeat"><span class="dot"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span><div class="ft"><b>매일 자동 재학습</b><span>실측이 쌓일수록 정확도 향상</span></div></div>
+        <div class="afeat"><span class="dot"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span><div class="ft"><b>만족도 투표 선순환</b><span>직원 반응이 다시 학습데이터로</span></div></div>
+      </div>
+    </div>
+    <div class="aiband">
+      <div class="bt">예측 AI · 생성형 AI · 임베딩을 <b>하나의 서비스</b>에 결합 — 총 <b>10가지</b> 역할</div>
+      <div class="tags"><span>예측</span><span>생성</span><span>이해</span><span>자가학습</span></div>
+    </div>
+    <div class="foot"><img src="assets/logo.png" onerror="this.style.display='none'"><span>AI가 하는 일 · AI 역량 지도</span><span class="pg">06</span></div>
+  </section>
+
+  <!-- 7. 예측 근거 -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="sect"><span class="no">03</span><span class="nm">AI가 하는 일</span></div>
+    <h1>이런 정보를 보고 <span class="u">숫자와 이유를 함께</span> 냅니다</h1>
+    <div class="why">
+      <div class="factors">
+        <div class="fac"><div class="ico nv"><svg viewBox="0 0 24 24"><path d="M6 20a6 6 0 0 1 12 0M12 4a4 4 0 1 1 0 8 4 4 0 0 1 0-8z"/></svg></div><div><b>근무 인원</b><span>연가·출장 빼고 실제 출근한 사람</span></div></div>
+        <div class="fac"><div class="ico nv"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg></div><div><b>요일</b><span>월~금 요일별 방문 패턴</span></div></div>
+        <div class="fac"><div class="ico nv"><svg viewBox="0 0 24 24"><path d="M8 3v4M16 3v4M4 9h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/><path d="M9 14h6"/></svg></div><div><b>특별한 일정</b><span>의회·행사 같은 날 보정</span></div></div>
+        <div class="fac"><div class="ico nv"><svg viewBox="0 0 24 24"><path d="M7 16a4 4 0 0 1 .5-8 5 5 0 0 1 9.5 1.5A3.5 3.5 0 0 1 16 16H7z"/><path d="M8 20l-1 1M12 20l-1 1M16 20l-1 1"/></svg></div><div><b>날씨(비)</b><span>비 오면 나가서 안 먹음</span></div></div>
+        <div class="fac"><div class="ico nv"><svg viewBox="0 0 24 24"><path d="M10 13V5a2 2 0 1 1 4 0v8a4 4 0 1 1-4 0z"/></svg></div><div><b>기온</b><span>너무 덥거나 추운 날</span></div></div>
+        <div class="fac"><div class="ico nv"><svg viewBox="0 0 24 24"><path d="M12 4l2.2 4.5 5 .7-3.6 3.5.8 4.9L12 15.8 7.6 18l.8-4.9L4.8 9.6l5-.7L12 4z"/></svg></div><div><b>메뉴 인기</b><span>제육볶음처럼 인기 많은 날</span></div></div>
+      </div>
+      <div class="side">
+        <div class="shot"><img src="assets/op_pred.png" alt=""></div>
+        <div class="quote">💬 <b>예측 이유 설명 예시</b><br>"내일은 목요일이고 비 예보가 있어 평소보다 적은 <b>622명</b>이 예상되지만, 인기 메뉴 제육볶음이 있어 일부 상쇄됩니다."</div>
+      </div>
+    </div>
+    <div class="foot"><img src="assets/logo.png" onerror="this.style.display='none'"><span>예측의 근거 · 운영앱 예측 화면</span><span class="pg">07</span></div>
+  </section>
+
+  <!-- 8. 운영앱 -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="sect"><span class="no">04</span><span class="nm">실제 화면 ①</span></div>
+    <h1>영양사 앱 — <span class="u">예측부터 식단·성과까지</span></h1>
+    <div class="gallery">
+      <div class="phone"><div class="pic"><img src="assets/op_home.png" alt=""></div><div class="cap"><b>홈</b><span>내일 예상 인원·몇 인분</span></div></div>
+      <div class="phone"><div class="pic"><img src="assets/op_pred.png" alt=""></div><div class="cap"><b>예측</b><span>자동 수집·예측 이유 설명</span></div></div>
+      <div class="phone"><div class="pic"><img src="assets/op_plan.png" alt=""></div><div class="cap"><b>식단 추천</b><span>AI가 짜주는 주간 초안</span></div></div>
+      <div class="phone"><div class="pic"><img src="assets/op_anal.png" alt=""></div><div class="cap"><b>분석</b><span>얼마나 맞았나·인기 메뉴</span></div></div>
+    </div>
+    <div class="foot"><img src="assets/logo.png" onerror="this.style.display='none'"><span>실제 화면 · 영양사 앱</span><span class="pg">08</span></div>
+  </section>
+
+  <!-- 9. 이용자앱 -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="sect"><span class="no">04</span><span class="nm">실제 화면 ②</span></div>
+    <h1>직원 앱 — <span class="u">식단·혼잡도, 그리고 함께 만드는 급식</span></h1>
+    <div class="gallery">
+      <div class="phone"><div class="pic"><img src="assets/us_today.png" alt=""></div><div class="cap"><b>오늘</b><span>오늘의 전체 식단·알레르기</span></div></div>
+      <div class="phone"><div class="pic"><img src="assets/us_week.png" alt=""></div><div class="cap"><b>식단표</b><span>요일별 스와이프</span></div></div>
+      <div class="phone"><div class="pic"><img src="assets/us_cong.png" alt=""></div><div class="cap"><b>혼잡도</b><span>언제 가면 안 붐비는지</span></div></div>
+      <div class="phone"><div class="pic"><img src="assets/us_chat.png" alt=""></div><div class="cap"><b>식단 비서</b><span>말로 물어보면 답해줌</span></div></div>
+    </div>
+    <div class="loopbar"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5"/></svg><span>직원이 누른 <b>'좋아요'</b>가 다시 AI를 가르쳐, 식단이 점점 입맛에 맞아집니다.</span></div>
+    <div class="foot"><img src="assets/logo.png" onerror="this.style.display='none'"><span>실제 화면 · 직원 앱</span><span class="pg">09</span></div>
+  </section>
+
+  <!-- 10. 기대효과 -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="sect"><span class="no">05</span><span class="nm">기대효과</span></div>
+    <h1>예산은 아끼고, 탄소는 줄이고, <span class="u">만족은 높입니다</span></h1>
+    <div style="font-size:13.5px;color:var(--gray);font-weight:600;margin-top:9px;">＊ 아이디어 제안 단계에서 <b style="color:var(--blue)">기대되는 효과</b>입니다 (도입·실증 전).</div>
+    <div class="kpis">
+      <div class="kc"><div class="v">정확한 예측</div><div class="l">감 대신 데이터 기반</div></div>
+      <div class="kc"><div class="v">잔반·비용 ↓</div><div class="l">버리는 음식·예산 감소</div></div>
+      <div class="kc"><div class="v">탄소 ↓</div><div class="l">친환경 급식</div></div>
+      <div class="kc"><div class="v">만족 ↑</div><div class="l">혼잡 완화·이용자 복지</div></div>
+    </div>
+    <div class="effs">
+      <div class="eff"><div class="eh"><div class="ico nv"><svg viewBox="0 0 24 24"><path d="M12 3v18M7 7h7a3 3 0 0 1 0 6H7m0 0h10"/></svg></div><b>예산 절감</b></div><p>정확히 예측할수록 남기는 음식이 줄어듭니다.</p><div class="f">적게 버릴수록 → 재료비 ↓ + 음식물 처리비 ↓ = 예산 절감</div></div>
+      <div class="eff"><div class="eh"><div class="ico nv"><svg viewBox="0 0 24 24"><path d="M12 8v4l3 2M12 3a9 9 0 1 0 .01 0z"/></svg></div><b>업무 효율</b></div><p>오래 걸리던 발주 판단을 자동화하고, 인사 시스템과 연동해 실수를 줄입니다.</p></div>
+      <div class="eff"><div class="eh"><div class="ico nv"><svg viewBox="0 0 24 24"><path d="M12 21c5-3 8-7 8-12a8 8 0 0 0-16 0c0 5 3 9 8 12z"/><path d="M12 21V9"/></svg></div><b>복지·환경</b></div><p>붐비는 시간을 안내해 대기를 줄이고, 잔반을 줄여 탄소 배출을 감축합니다.</p></div>
+      <div class="eff"><div class="eh"><div class="ico nv"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v12c0 1.7 3 3 7 3s7-1.3 7-3V6M5 12c0 1.7 3 3 7 3s7-1.3 7-3"/></svg></div><b>확산 가능</b></div><p>다른 기관 구내식당에도 그대로 적용할 수 있는 데이터기반행정 사례입니다.</p></div>
+    </div>
+    <div class="foot"><img src="assets/logo.png" onerror="this.style.display='none'"><span>기대효과 · 아이디어 제안 단계의 기대 효과 (도입·실증 전)</span><span class="pg">10</span></div>
+  </section>
+
+  <!-- 11. 현실 가능성 -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="sect"><span class="no">05</span><span class="nm">현실 가능성</span></div>
+    <h1>이미 데이터가 있고, <span class="u">AI로 쉽게 만들 수 있습니다</span></h1>
+    <div class="effs" style="grid-template-columns:1fr 1fr;">
+      <div class="eff big"><div class="eh"><div class="ico nv"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v12c0 1.7 3 3 7 3s7-1.3 7-3V6M5 12c0 1.7 3 3 7 3s7-1.3 7-3"/></svg></div><b>데이터가 이미 있다</b></div><p>식수 기록·인사(인사랑)·기상청·식단시스템이 <b class="hi">이미 운영 중</b>입니다. 새로 모을 필요 없이 <b class="hi">'연계'만</b> 하면 됩니다.</p></div>
+      <div class="eff big"><div class="eh"><div class="ico bl"><svg viewBox="0 0 24 24"><path d="M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8L12 3z"/><path d="M18 14l.9 2.1L21 17l-2.1.9L18 20l-.9-2.1L15 17l2.1-.9z"/></svg></div><b>AI로 빠르고 쉽게 구현</b></div><p>요즘은 AI가 코딩을 돕는 <b class="hi">'바이브 코딩'</b>으로 앱을 짧은 기간·적은 비용에 만들 수 있습니다. 오늘 보신 <b class="hi">작동하는 프로토타입</b>도 이렇게 제작했습니다.</p><div class="demo">▶ 작동하는 앱 = 실현 가능성 입증</div></div>
+    </div>
+    <div class="rmini">
+      <div class="rl"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>실현 로드맵 — 작게 시작해 단계적으로</div>
+      <div class="rmflow">
+        <div class="rmstep"><b>데이터 연계</b><span>인사·날씨·식단</span></div>
+        <div class="rmarrow">→</div>
+        <div class="rmstep"><b>정확도 검증</b><span>성능 모니터링</span></div>
+        <div class="rmarrow">→</div>
+        <div class="rmstep"><b>발주 자동화</b><span>발주서 생성</span></div>
+        <div class="rmarrow">→</div>
+        <div class="rmstep"><b>확대</b><span>석식·타 기관</span></div>
+      </div>
+    </div>
+    <div class="foot"><img src="assets/logo.png" onerror="this.style.display='none'"><span>현실 가능성</span><span class="pg">11</span></div>
+  </section>
+
+  <!-- 12. 마무리 -->
+  <section class="slide">
+    <div class="topbar"></div>
+    <div class="sect"><span class="no">05</span><span class="nm">마무리</span></div>
+    <div class="endwrap">
+      <h1>감으로 하던 급식을, <span class="u">데이터로 바꿉니다</span></h1>
+      <div class="lead">세종특별자치시 「똑똑 식판」 — 내일 점심 인원을 예측하는 AI 구내식당 서비스<br>예산은 아끼고, 탄소는 줄이고, 이용자 만족은 높입니다.</div>
+      <div style="margin-top:30px;"><img src="assets/logo.png" style="height:36px;" onerror="this.style.display='none'"></div>
+    </div>
+    <div class="foot"><img src="assets/logo.png" onerror="this.style.display='none'"><span>마무리</span><span class="pg">12</span></div>
+  </section>
+
+</div>
+
+<div class="nav">
+  <button onclick="go(-1)">‹</button>
+  <div class="dots" id="dots"></div>
+  <span class="cnt" id="cnt">1 / 12</span>
+  <button onclick="go(1)">›</button>
+</div>
+<div class="help">← → 방향키 · F 전체화면</div>
+
+<script>
+  const slides=[...document.querySelectorAll('.slide')];
+  const dotsEl=document.getElementById('dots'),cntEl=document.getElementById('cnt');
+  let idx=0;
+  slides.forEach((_,i)=>{const d=document.createElement('i');if(i===0)d.className='on';d.onclick=()=>show(i);dotsEl.appendChild(d);});
+  function show(i){idx=(i+slides.length)%slides.length;slides.forEach((s,j)=>s.classList.toggle('on',j===idx));[...dotsEl.children].forEach((d,j)=>d.classList.toggle('on',j===idx));cntEl.textContent=`${idx+1} / ${slides.length}`;}
+  function go(d){show(idx+d);}
+  function fit(){const s=Math.min(window.innerWidth/1280,window.innerHeight/720);document.getElementById('stage').style.transform=`scale(${s})`;}
+  window.addEventListener('resize',fit);fit();
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){go(1);e.preventDefault();}
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){go(-1);e.preventDefault();}
+    else if(e.key==='Home')show(0); else if(e.key==='End')show(slides.length-1);
+    else if(e.key==='f'||e.key==='F'){if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen();}
+  });
+  document.getElementById('stage').addEventListener('click',e=>{if(e.target.closest('.nav'))return;const r=window.innerWidth/2;go(e.clientX>r?1:-1);});
+</script>
+</body>
+</html>

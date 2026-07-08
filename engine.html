@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>똑똑 식판 · AI 예측 엔진 데모</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root{--navy:#0E2A6B;--blue:#1D4ED8;--blue2:#2563EB;--ink:#1F2A44;--gray:#5A6B87;--line:#E4E9F2;--bg:#F6F8FC;--ice:#EEF4FF;
+    --ok:#16A34A;--okbg:#EAF6EF;--okl:#CBEBD8;--warn:#C0392B;
+    --font:'Pretendard','Pretendard Variable','Malgun Gothic',sans-serif;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:var(--font);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;line-height:1.5;}
+  .wrap{max-width:1000px;margin:0 auto;padding:28px 22px 60px;}
+  .top{display:flex;align-items:center;gap:14px;padding:20px 24px;background:linear-gradient(135deg,#0E2A6B,#1D4ED8);border-radius:18px;color:#fff;box-shadow:0 12px 30px rgba(20,50,130,.28);}
+  .top .badge{width:52px;height:52px;border-radius:14px;background:rgba(255,255,255,.16);display:grid;place-items:center;flex:none;}
+  .top .badge svg{width:28px;height:28px;fill:none;stroke:#fff;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
+  .top h1{font-size:24px;font-weight:800;letter-spacing:-.5px;}
+  .top p{font-size:13.5px;color:#CFE0FF;margin-top:3px;}
+  .note{font-size:12.5px;color:var(--gray);background:#fff;border:1px dashed #C9D5EA;border-radius:12px;padding:12px 16px;margin-top:16px;}
+  .note b{color:var(--navy);}
+  .card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px 24px;margin-top:18px;box-shadow:0 8px 22px rgba(20,40,90,.05);}
+  .sect{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+  .sect .n{width:30px;height:30px;border-radius:9px;background:var(--navy);color:#fff;display:grid;place-items:center;font-size:15px;font-weight:800;flex:none;}
+  .sect h2{font-size:19px;font-weight:800;color:var(--navy);}
+  .sect .tag{margin-left:auto;font-size:11px;font-weight:800;color:var(--ok);background:var(--okbg);border:1px solid var(--okl);padding:4px 11px;border-radius:999px;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th,td{padding:8px 8px;text-align:center;border-bottom:1px solid var(--line);}
+  th{background:var(--bg);color:var(--gray);font-weight:800;font-size:12px;}
+  td.y{font-weight:800;color:var(--navy);} td.mn{font-weight:700;}
+  .sub{font-size:12.5px;color:var(--gray);margin-top:10px;}
+  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+  .kpi{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:14px 16px;text-align:center;}
+  .kpi .v{font-size:26px;font-weight:800;color:var(--blue);letter-spacing:-.5px;} .kpi .l{font-size:11.5px;color:var(--gray);margin-top:3px;font-weight:600;}
+  .imp{margin-top:18px;} .improw{display:flex;align-items:center;gap:10px;margin-bottom:9px;}
+  .improw .nm{width:110px;font-size:13px;font-weight:700;} .improw .bar{flex:1;height:12px;background:var(--ice);border-radius:999px;overflow:hidden;} .improw .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--navy),var(--blue));border-radius:999px;} .improw .pc{width:36px;text-align:right;font-size:12px;font-weight:800;color:var(--blue);}
+  .predwrap{display:grid;grid-template-columns:1.05fr .95fr;gap:24px;align-items:start;}
+  .ctrl{margin-bottom:15px;} .ctrl label{display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:7px;} .ctrl label b{color:var(--blue);font-weight:800;}
+  input[type=range]{width:100%;accent-color:var(--blue);height:6px;}
+  select{width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:10px;font-family:var(--font);font-size:13.5px;font-weight:700;color:var(--ink);background:#fff;}
+  .seg{display:flex;gap:5px;background:var(--bg);border-radius:11px;padding:4px;}
+  .seg button{all:unset;cursor:pointer;flex:1;text-align:center;font-size:13px;font-weight:800;color:var(--gray);padding:8px 0;border-radius:8px;}
+  .seg button.on{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;}
+  .togg{display:flex;gap:8px;} .togg button{all:unset;cursor:pointer;flex:1;text-align:center;font-size:13px;font-weight:800;color:var(--gray);background:var(--bg);border:1px solid var(--line);padding:9px 0;border-radius:10px;} .togg button.on{background:var(--navy);color:#fff;border-color:var(--navy);}
+  .result{background:linear-gradient(150deg,#0E2A6B,#1D4ED8);color:#fff;border-radius:16px;padding:22px;text-align:center;box-shadow:0 10px 24px rgba(20,50,130,.28);}
+  .result .k{font-size:13px;color:#CFE0FF;} .result .big{font-size:52px;font-weight:800;letter-spacing:-1.5px;line-height:1.05;} .result .big small{font-size:18px;font-weight:600;}
+  .result .rec{display:inline-block;margin-top:10px;font-size:13px;font-weight:800;background:rgba(255,255,255,.16);border:1px solid rgba(180,205,255,.4);padding:7px 14px;border-radius:999px;}
+  .why{margin-top:16px;} .whyt{font-size:12.5px;font-weight:800;color:var(--navy);margin-bottom:9px;}
+  .wrow{display:flex;align-items:center;gap:9px;margin-bottom:7px;font-size:12.5px;} .wrow .wl{width:76px;font-weight:700;color:var(--ink);} .wrow .wb{flex:1;height:16px;position:relative;background:var(--bg);border-radius:6px;overflow:hidden;} .wrow .wb i{position:absolute;top:0;bottom:0;} .wrow .wv{width:52px;text-align:right;font-weight:800;} .wrow .wv.p{color:var(--ok);} .wrow .wv.m{color:var(--warn);}
+  .report{font-size:13.5px;line-height:1.65;color:var(--ink);background:var(--ice);border-radius:12px;padding:14px 16px;margin-top:16px;}
+  .report b{color:var(--blue);}
+  svg.chart{width:100%;height:auto;display:block;}
+  .legend{display:flex;gap:16px;justify-content:center;margin-top:10px;font-size:12px;font-weight:700;color:var(--gray);} .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:middle;}
+  .foot{text-align:center;font-size:11.5px;color:#9AA9C4;margin-top:26px;}
+  @media(max-width:720px){.predwrap{grid-template-columns:1fr;} .kpis{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="badge"><svg viewBox="0 0 24 24"><rect x="4" y="7" width="16" height="13" rx="2"/><path d="M8 7V4h8v3M8 12h.01M16 12h.01M8 16h8"/></svg></div>
+    <div><h1>똑똑 식판 · AI 예측 엔진</h1><p><b style="color:#fff">영양사 앱의 예측</b>을 실제 데이터로 계산하는 작동 엔진 (모든 수치는 브라우저에서 실시간 학습·계산)</p></div>
+  </div>
+  <div class="note">＊ 이 엔진은 <b>영양사 앱과 똑같은 메뉴·변수·공식</b>을 씁니다. <b>가상의 샘플(합성) 데이터</b>를 만들어 브라우저에서 실제 회귀모델을 학습시킨 것으로, 하드코딩이 아니라 데이터로부터 계산됩니다. 실제 도입 시 <b>세종시 실데이터로 교체하면 그대로 작동</b>합니다.</div>
+
+  <!-- 1. 샘플 데이터 -->
+  <div class="card">
+    <div class="sect"><span class="n">1</span><h2>샘플 데이터 자동 생성</h2><span class="tag" id="dataTag">— 일</span></div>
+    <div class="sub" id="dataDesc">—</div>
+    <div style="overflow-x:auto;margin-top:14px;"><table id="dataTable"></table></div>
+    <div class="sub">＊ 실근무 인원(정원−휴가−출장−재택)·요일·날씨·메뉴 인기 등이 실제 식수에 영향을 주도록 패턴 + 잡음을 넣어 생성했습니다. AI는 이 패턴을 <b>스스로</b> 찾아냅니다.</div>
+  </div>
+
+  <!-- 2. 학습 결과 -->
+  <div class="card">
+    <div class="sect"><span class="n">2</span><h2>AI 학습 결과</h2><span class="tag">브라우저에서 학습</span></div>
+    <div class="kpis">
+      <div class="kpi"><div class="v" id="kMae">—</div><div class="l">평균 예측 오차 (검증)</div></div>
+      <div class="kpi"><div class="v" id="kAcc">—</div><div class="l">평균 적중률</div></div>
+      <div class="kpi"><div class="v" id="kSplit">—</div><div class="l">학습 / 검증 데이터</div></div>
+    </div>
+    <div class="imp">
+      <div class="whyt" style="font-size:13.5px;margin-bottom:12px;">AI가 학습한 변수 영향력 <span style="font-weight:600;color:var(--gray);">— 어떤 정보가 식수를 좌우하는지 스스로 파악</span></div>
+      <div id="importance"></div>
+    </div>
+  </div>
+
+  <!-- 3. 내일 예측 -->
+  <div class="card">
+    <div class="sect"><span class="n">3</span><h2>내일 식수 예측 (직접 조절해 보세요)</h2><span class="tag">실시간 계산</span></div>
+    <div class="predwrap">
+      <div>
+        <div class="ctrl"><label>요일</label><div class="seg" id="dowSeg"></div></div>
+        <div class="ctrl"><label>실근무 인원 <b id="vStaff">—</b></label><input type="range" id="rStaff" min="520" max="860" value="712"></div>
+        <div class="ctrl"><label>오늘의 메뉴 (메인) <b id="vMenu">—</b></label><select id="rMenu"></select></div>
+        <div class="ctrl"><label>기온 <b id="vTemp">—</b></label><input type="range" id="rTemp" min="0" max="35" value="24"></div>
+        <div class="ctrl"><label>행사·의회 보정 <b id="vSpec">—</b></label><input type="range" id="rSpec" min="-40" max="40" value="-20"></div>
+        <div class="ctrl"><label>강수(비)</label><div class="togg" id="rainTog"><button data-v="0">맑음</button><button data-v="1" class="on">비</button></div></div>
+      </div>
+      <div>
+        <div class="result">
+          <div class="k">예측 식수</div>
+          <div class="big"><span id="predNum">—</span><small> 명</small></div>
+          <div class="rec" id="predRec">—</div>
+        </div>
+        <div class="why">
+          <div class="whyt">＊ 이 숫자가 나온 이유 (변수별 영향)</div>
+          <div id="whyList"></div>
+        </div>
+      </div>
+    </div>
+    <div class="report" id="report">—</div>
+  </div>
+
+  <!-- 4. 실측 vs 예측 -->
+  <div class="card">
+    <div class="sect"><span class="n">4</span><h2>실측 vs 예측 (검증 데이터)</h2><span class="tag">얼마나 맞았나</span></div>
+    <div class="sub" style="margin-top:0;margin-bottom:12px;">한 번도 학습에 쓰지 않은 날들로 검증했습니다. 점이 <b style="color:var(--blue)">대각선</b>에 가까울수록 예측이 정확합니다.</div>
+    <div id="scatter"></div>
+    <div class="legend"><span><i style="background:#1D4ED8"></i>검증 데이터 (실측 vs 예측)</span><span><i style="background:#9AA9C4"></i>완벽 예측선</span></div>
+  </div>
+
+  <div class="foot">시연용 프로토타입 · 합성 샘플 데이터 기반 · 세종특별자치시 「똑똑 식판」 · 영양사 앱과 동일 로직</div>
+</div>
+
+<script>
+/* ===== 영양사 앱과 동일한 메뉴·변수·공식 ===== */
+const MENUS=[
+ {name:'제육볶음',pop:92},{name:'돈까스',pop:88},{name:'함박스테이크',pop:85},
+ {name:'김치찌개',pop:78},{name:'비빔밥',pop:70},{name:'고등어구이',pop:55}];
+const DOWS=['월','화','수','목','금'];
+const DAYF={'월':15,'화':5,'수':0,'목':-20,'금':-60};
+const CAP=980;
+/* 영양사 앱 predict()와 동일: p = 실근무 + 요일 + 강수 + 기온 + 메뉴인기 + 일정 */
+function truthY(d,noise){return Math.round(d.staff + DAYF[d.dow] + (d.rain?-25:0) + (22-d.temp)*1.1 + (d.pop-70)*1.2 + d.special + noise);}
+function genData(n){
+  const out=[];
+  for(let i=0;i<n;i++){
+    const dow=DOWS[i%5];
+    const temp=Math.max(0,Math.min(35,Math.round(8+Math.random()*22+(Math.random()-0.5)*6)));
+    const rain=Math.random()<0.25?1:0;
+    const leave=Math.round(60+Math.random()*170), trip=Math.round(40+Math.random()*130), remote=60;
+    const staff=CAP-leave-trip-remote;
+    const m=MENUS[Math.floor(Math.random()*MENUS.length)];
+    const special=Math.random()<0.22?Math.round((Math.random()-0.5)*70):0;
+    const noise=(Math.random()-0.5)*54;
+    const rec={dow,temp,rain,staff,menu:m.name,pop:m.pop,special};
+    rec.y=truthY(rec,noise);
+    out.push(rec);
+  }
+  return out;
+}
+const N=252, RAW=genData(N), SPLIT=202;
+const TEST=RAW.slice(SPLIT), TRAIN=RAW.slice(0,SPLIT);
+
+/* ===== 특징 벡터: [실근무, 기온, 강수, 메뉴인기, 일정, 월,화,목,금] (수=기준) ===== */
+function feat(d){return [d.staff,d.temp,d.rain,d.pop,d.special,d.dow==='월'?1:0,d.dow==='화'?1:0,d.dow==='목'?1:0,d.dow==='금'?1:0];}
+const FNAMES=['실근무 인원','기온','강수(비)','메뉴 인기','행사·의회','월요일','화요일','목요일','금요일'];
+
+const Xtr_raw=TRAIN.map(feat), ytr=TRAIN.map(d=>d.y);
+const M=Xtr_raw[0].length, means=[], stds=[];
+for(let j=0;j<M;j++){const col=Xtr_raw.map(r=>r[j]);const mu=col.reduce((a,b)=>a+b,0)/col.length;const sd=Math.sqrt(col.reduce((a,b)=>a+(b-mu)**2,0)/col.length)||1;means.push(mu);stds.push(sd);}
+function stdz(row){return row.map((v,j)=>(v-means[j])/stds[j]);}
+const Xtr=Xtr_raw.map(stdz);
+
+/* 경사하강법 선형회귀 */
+function trainGD(X,y,epochs,lr){
+  const n=X.length,m=X[0].length; let w=new Array(m).fill(0),b=0;
+  for(let e=0;e<epochs;e++){
+    const gw=new Array(m).fill(0); let gb=0;
+    for(let i=0;i<n;i++){let p=b;for(let j=0;j<m;j++)p+=w[j]*X[i][j];const err=p-y[i];for(let j=0;j<m;j++)gw[j]+=err*X[i][j];gb+=err;}
+    for(let j=0;j<m;j++)w[j]-=lr*gw[j]/n; b-=lr*gb/n;
+  }
+  return {w,b};
+}
+const MODEL=trainGD(Xtr,ytr,1000,0.15);
+function predictRaw(d){const x=stdz(feat(d));let p=MODEL.b;for(let j=0;j<MODEL.w.length;j++)p+=MODEL.w[j]*x[j];return p;}
+
+/* 성능 */
+const testPred=TEST.map(predictRaw);
+const mae=TEST.reduce((a,d,i)=>a+Math.abs(testPred[i]-d.y),0)/TEST.length;
+const avgY=TEST.reduce((a,d)=>a+d.y,0)/TEST.length;
+const acc=100*(1-mae/avgY);
+
+/* 데이터 테이블 */
+document.getElementById('dataTag').textContent=N+'일 (약 1년)';
+document.getElementById('dataDesc').innerHTML=`구내식당 <b>${N}일치</b> 기록을 자동 생성했습니다. 각 날의 요일·실근무 인원·날씨·메뉴와 실제 식수를 담고 있습니다.`;
+let th='<tr><th>요일</th><th>실근무</th><th>기온</th><th>비</th><th>메뉴(메인)</th><th>인기</th><th>실제 식수</th></tr>';
+let rows=RAW.slice(0,8).map(d=>`<tr><td>${d.dow}</td><td>${d.staff}</td><td>${d.temp}°</td><td>${d.rain?'비':'—'}</td><td class="mn">${d.menu}</td><td>${d.pop}</td><td class="y">${d.y}명</td></tr>`).join('');
+document.getElementById('dataTable').innerHTML=th+rows;
+
+/* 학습 결과 */
+document.getElementById('kMae').textContent='±'+mae.toFixed(1)+'명';
+document.getElementById('kAcc').textContent=acc.toFixed(1)+'%';
+document.getElementById('kSplit').textContent=SPLIT+' / '+TEST.length+'일';
+const imp=MODEL.w.map((w,j)=>({nm:FNAMES[j],v:Math.abs(w)}));
+const maxImp=Math.max(...imp.map(x=>x.v));
+imp.sort((a,b)=>b.v-a.v);
+document.getElementById('importance').innerHTML=imp.slice(0,6).map(x=>`<div class="improw"><span class="nm">${x.nm}</span><span class="bar"><i style="width:${(x.v/maxImp*100).toFixed(0)}%"></i></span><span class="pc">${(x.v/maxImp*100).toFixed(0)}</span></div>`).join('');
+
+/* 내일 예측 (인터랙티브) — 기본값 = 영양사 앱 '내일' 시나리오 */
+const state={dow:'목',staff:712,menu:'제육볶음',pop:92,temp:24,special:-20,rain:1};
+const dowSeg=document.getElementById('dowSeg');
+DOWS.forEach(d=>{const b=document.createElement('button');b.textContent=d;if(d===state.dow)b.className='on';b.onclick=()=>{state.dow=d;[...dowSeg.children].forEach(x=>x.classList.remove('on'));b.classList.add('on');update();};dowSeg.appendChild(b);});
+const rStaff=document.getElementById('rStaff'),rTemp=document.getElementById('rTemp'),rMenu=document.getElementById('rMenu'),rSpec=document.getElementById('rSpec');
+rStaff.value=state.staff;rTemp.value=state.temp;rSpec.value=state.special;
+rMenu.innerHTML=MENUS.map(m=>`<option value="${m.name}"${m.name===state.menu?' selected':''}>${m.name} (인기 ${m.pop})</option>`).join('');
+rMenu.onchange=()=>{const m=MENUS.find(x=>x.name===rMenu.value);state.menu=m.name;state.pop=m.pop;update();};
+[[rStaff,'staff'],[rTemp,'temp'],[rSpec,'special']].forEach(([el,key])=>el.oninput=()=>{state[key]=+el.value;update();});
+const rainTog=document.getElementById('rainTog');
+[...rainTog.children].forEach(b=>{b.onclick=()=>{state.rain=+b.dataset.v;[...rainTog.children].forEach(x=>x.classList.toggle('on',x===b));update();};});
+
+function contrib(){
+  const base=predictRaw(state);
+  const items=[['실근무 인원',{staff:means[0]}],['요일',{dow:'수'}],['날씨(비)',{rain:0}],['기온',{temp:means[1]}],['메뉴 인기',{pop:means[3]}]];
+  return items.map(([nm,mod])=>({nm,d:base-predictRaw({...state,...mod})}));
+}
+function update(){
+  document.getElementById('vStaff').textContent=state.staff+'명';
+  document.getElementById('vTemp').textContent=state.temp+'°C';
+  document.getElementById('vMenu').textContent='인기 '+state.pop;
+  document.getElementById('vSpec').textContent=(state.special>0?'+':'')+state.special+'명';
+  const p=Math.round(predictRaw(state));
+  const rec=Math.round(p+p*0.03+8);
+  document.getElementById('predNum').textContent=p;
+  document.getElementById('predRec').textContent='✔ 권장 조리량 '+rec+'인분';
+  const cs=contrib(); const maxc=Math.max(...cs.map(c=>Math.abs(c.d)),1);
+  document.getElementById('whyList').innerHTML=cs.map(c=>{const w=Math.abs(c.d)/maxc*46;const pos=c.d>=0;const bar=`<i style="${pos?'left:50%':'right:50%'};width:${w}%;background:${pos?'var(--ok)':'var(--warn)'}"></i>`;return `<div class="wrow"><span class="wl">${c.nm}</span><span class="wb"><i style="left:50%;width:1px;background:#C3CFE4"></i>${bar}</span><span class="wv ${pos?'p':'m'}">${pos?'+':''}${Math.round(c.d)}</span></div>`;}).join('');
+  const trend=cs.reduce((a,c)=>a+c.d,0)>=0?'많은':'적은';
+  const rainTxt=state.rain?'비 예보가 있어':'맑은 날씨로';
+  const menuTxt=state.pop>=80?`인기 메뉴 ‘${state.menu}’이(가) 포함되어 방문 증가 요인이 있습니다. `:state.pop<60?`‘${state.menu}’은(는) 상대적 비인기 메뉴로 감소 요인이 있습니다. `:'';
+  document.getElementById('report').innerHTML=`${state.dow}요일이고 ${rainTxt} 평소보다 ${trend} <b>${p}명</b>이 방문할 것으로 예상됩니다. ${menuTxt}안전재고를 포함한 <b>권장 조리량은 ${rec}인분</b>입니다.`;
+}
+update();
+
+/* 실측 vs 예측 산점도 */
+(function(){
+  const W=920,H=360,PL=54,PR=20,PT=16,PB=44;
+  const acts=TEST.map(d=>d.y), prs=testPred;
+  const mn=Math.min(...acts,...prs)-15, mx=Math.max(...acts,...prs)+15;
+  const X=v=>PL+(W-PL-PR)*(v-mn)/(mx-mn), Y=v=>PT+(H-PT-PB)*(1-(v-mn)/(mx-mn));
+  let g='';
+  for(let t=0;t<=4;t++){const val=mn+(mx-mn)*t/4;const yy=Y(val),xx=X(val);
+    g+=`<line x1="${PL}" y1="${yy}" x2="${W-PR}" y2="${yy}" stroke="#EEF2FA"/><text x="${PL-8}" y="${yy+4}" text-anchor="end" font-size="11" fill="#94A3B8">${Math.round(val)}</text>`;
+    g+=`<text x="${xx}" y="${H-14}" text-anchor="middle" font-size="11" fill="#94A3B8">${Math.round(val)}</text>`;}
+  const diag=`<line x1="${X(mn)}" y1="${Y(mn)}" x2="${X(mx)}" y2="${Y(mx)}" stroke="#9AA9C4" stroke-width="2" stroke-dasharray="6 5"/>`;
+  const dots=TEST.map((d,i)=>`<circle cx="${X(d.y)}" cy="${Y(prs[i])}" r="4" fill="#1D4ED8" fill-opacity="0.7"/>`).join('');
+  document.getElementById('scatter').innerHTML=`<svg class="chart" viewBox="0 0 ${W} ${H}">${g}${diag}${dots}<text x="${(PL+W-PR)/2}" y="${H-1}" text-anchor="middle" font-size="12" font-weight="700" fill="#5A6B87">실제 식수 (명)</text><text transform="translate(16,${(PT+H-PB)/2}) rotate(-90)" text-anchor="middle" font-size="12" font-weight="700" fill="#5A6B87">예측 식수 (명)</text></svg>`;
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>똑똑 식판 · 통합 앱</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root{--navy:#0E2A6B;--blue:#1D4ED8;--muted:#6B7A99;--line:#E3EAF6;
+    --font:'Pretendard','Pretendard Variable','Malgun Gothic',sans-serif;}
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{font-family:var(--font);overflow:hidden;background:radial-gradient(900px 500px at 50% -5%,#DCE9FB,transparent 60%),linear-gradient(180deg,#E9F0FA,#DCE6F5);}
+
+  /* 역할 토글 */
+  .rolebar{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:120;display:flex;align-items:center;gap:10px;
+    background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:999px;padding:6px 8px 6px 16px;box-shadow:0 10px 26px rgba(15,40,110,.16);}
+  .rolebar .brand{display:flex;align-items:center;gap:8px;padding-right:12px;border-right:1px solid var(--line);}
+  .rolebar .brand b{font-size:13px;font-weight:800;color:var(--navy);letter-spacing:-.3px;}
+  .rolebar .brand span{font-size:10px;font-weight:700;color:var(--muted);}
+  .seg{display:flex;gap:4px;background:#EEF3FB;border-radius:999px;padding:4px;}
+  .seg button{all:unset;cursor:pointer;font-size:13px;font-weight:800;color:var(--muted);padding:8px 20px;border-radius:999px;transition:.16s;display:flex;align-items:center;gap:7px;}
+  .seg button svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
+  .seg button.on{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;box-shadow:0 4px 12px rgba(29,78,216,.32);}
+
+  /* 앱 프레임 */
+  .frames{position:absolute;inset:0;}
+  .frames iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:none;background:transparent;}
+  .frames iframe.on{display:block;animation:sw .3s ease;}
+  @keyframes sw{from{opacity:0;}to{opacity:1;}}
+
+  .hint{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:110;font-size:11.5px;color:#5B6B8C;background:rgba(255,255,255,.82);padding:6px 14px;border-radius:999px;box-shadow:0 4px 14px rgba(15,40,110,.12);}
+  @media(max-width:440px){
+    .rolebar{top:auto;bottom:calc(12px + env(safe-area-inset-bottom));padding:5px 6px 5px 12px;}
+    .rolebar .brand{display:none;}
+    .seg button{padding:8px 18px;}
+    .hint{display:none;}
+  }
+</style>
+</head>
+<body>
+  <div class="rolebar">
+    <div class="brand"><b>똑똑 식판</b><span>통합 데모</span></div>
+    <div class="seg">
+      <button id="btnOp" class="on" onclick="setRole('op')">
+        <svg viewBox="0 0 24 24"><path d="M6 20a6 6 0 0 1 12 0M12 4a4 4 0 1 1 0 8 4 4 0 0 1 0-8z"/></svg>영양사</button>
+      <button id="btnUs" onclick="setRole('us')">
+        <svg viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="2"/><path d="M11 18h2"/></svg>직원</button>
+    </div>
+  </div>
+
+  <div class="frames">
+    <iframe id="fOp" class="on" title="영양사 앱" src="operator.html"></iframe>
+    <iframe id="fUs" title="직원 앱" src="employee.html"></iframe>
+  </div>
+
+  <div class="hint" id="hint">운영자(영양사) 화면 · 위 토글로 직원 화면 전환</div>
+
+<script>
+  function setRole(r){
+    const op=r==='op';
+    document.getElementById('fOp').classList.toggle('on',op);
+    document.getElementById('fUs').classList.toggle('on',!op);
+    document.getElementById('btnOp').classList.toggle('on',op);
+    document.getElementById('btnUs').classList.toggle('on',!op);
+    document.getElementById('hint').textContent = op
+      ? '운영자(영양사) 화면 · 위 토글로 직원 화면 전환'
+      : '이용자(직원) 화면 · 위 토글로 영양사 화면 전환';
+  }
+</script>
+</body>
+</html>

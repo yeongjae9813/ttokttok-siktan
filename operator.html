@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>똑똑 식판 · 운영 — 영양사용</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root{
+    --navy:#0E2A6B;--blue:#1D4ED8;--blue2:#2563EB;--azure:#0EA5E9;--sky:#60A5FA;
+    --bg:#EEF2F8;--card:#FFFFFF;--ice:#EEF4FF;--ice2:#F5F8FE;
+    --ink:#1A2540;--muted:#7A88A6;--line:#EAEFF7;
+    --ok:#16A34A;--warn:#DC2626;--amber:#F59E0B;--purple:#7C3AED;
+    --meat:#B45309;--fish:#0369A1;--veg:#15803D;--soup:#7C3AED;
+    --font:'Pretendard','Pretendard Variable',-apple-system,BlinkMacSystemFont,'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;}
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{font-family:var(--font);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px 16px;color:var(--ink);
+    -webkit-font-smoothing:antialiased;background:radial-gradient(900px 500px at 50% -5%,#DCE9FB,transparent 60%),linear-gradient(180deg,#E9F0FA,#DCE6F5);}
+  .device{width:390px;height:min(844px,94vh);background:#0B1F45;border-radius:46px;padding:12px;box-shadow:0 30px 70px rgba(14,42,107,.45),inset 0 0 0 2px #24365f;position:relative;}
+  .screen{background:var(--bg);border-radius:35px;height:100%;overflow:hidden;position:relative;display:flex;flex-direction:column;}
+  .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:132px;height:26px;background:#0B1F45;border-radius:0 0 16px 16px;z-index:30;}
+
+  /* ===== 앱바 (화이트 + 세종 로고) ===== */
+  .appbar{background:#fff;flex:none;padding:34px 16px 12px;box-shadow:0 2px 14px rgba(20,45,110,.05);z-index:12;position:relative;}
+  .apptop{display:flex;align-items:center;gap:11px;}
+  .brand{display:flex;align-items:center;gap:10px;min-width:0;}
+  .brand .logo{height:22px;width:auto;display:block;}
+  .brand .divg{width:1px;height:20px;background:var(--line);}
+  .brand .wm{min-width:0;} .brand .wm b{font-size:15px;font-weight:800;color:var(--navy);letter-spacing:-.3px;display:block;line-height:1.1;}
+  .brand .wm span{font-size:9.5px;color:var(--muted);font-weight:600;}
+  .rolebadge{margin-left:auto;font-size:10px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--navy),var(--blue));padding:5px 11px;border-radius:999px;flex:none;}
+  .bell{position:relative;width:34px;height:34px;border-radius:11px;background:var(--ice);display:grid;place-items:center;flex:none;}
+  .bell svg{width:17px;height:17px;stroke:var(--navy);} .bell::after{content:"";position:absolute;top:8px;right:9px;width:6px;height:6px;border-radius:50%;background:var(--warn);border:1.5px solid #fff;}
+
+  .scrollarea{flex:1;overflow-y:auto;padding:14px;} .scrollarea::-webkit-scrollbar{width:0;}
+  .tabscreen{display:none;flex-direction:column;gap:13px;} .tabscreen.on{display:flex;animation:fade .28s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+
+  .tabbar{flex:none;display:flex;background:#fff;border-top:1px solid var(--line);padding:8px 4px calc(8px + env(safe-area-inset-bottom));}
+  .tabbar button{all:unset;cursor:pointer;flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;color:#9AA9C4;font-size:9.5px;font-weight:700;padding:3px 0;}
+  .tabbar button svg{width:22px;height:22px;stroke:#9AA9C4;fill:none;stroke-width:1.9;}
+  .tabbar button.on{color:var(--blue);} .tabbar button.on svg{stroke:var(--blue);}
+
+  .card{background:var(--card);border-radius:18px;padding:16px 17px;box-shadow:0 6px 18px rgba(15,40,110,.05);}
+  h4{font-size:12.5px;font-weight:800;color:var(--ink);margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+  h4 .auto{margin-left:auto;font-size:10px;font-weight:700;color:var(--ok);background:#F0FDF4;border:1px solid #BBF7D0;padding:3px 8px;border-radius:999px;}
+  h4 .gen{margin-left:auto;font-size:10px;font-weight:700;color:var(--purple);background:#F3E8FF;border:1px solid #E9D5FF;padding:3px 8px;border-radius:999px;}
+  h4 .impact{margin-left:auto;font-size:10.5px;font-weight:800;} h4 .impact.minus{color:var(--warn);} h4 .impact.plus{color:var(--ok);} h4 .impact.zero{color:var(--muted);}
+  .sectlabel{font-size:11.5px;font-weight:800;color:var(--muted);padding:2px 4px 0;display:flex;align-items:center;}
+  .sectlabel .more{margin-left:auto;font-size:10.5px;color:var(--blue);font-weight:700;}
+  .sub{font-size:11.5px;color:var(--muted);line-height:1.55;}
+
+  /* ===== 히어로 배너 ===== */
+  .hero{position:relative;overflow:hidden;display:flex;align-items:center;gap:14px;background:linear-gradient(150deg,#12327F,#1D4ED8 70%,#2E6BE6);border-radius:22px;padding:18px;color:#fff;box-shadow:0 12px 26px rgba(20,55,140,.32);}
+  .hero::after{content:"";position:absolute;right:-40px;top:-40px;width:150px;height:150px;border-radius:50%;background:rgba(255,255,255,.08);}
+  .hero .info{flex:1;z-index:1;} .hero .k{font-size:11.5px;color:#CBDCFB;font-weight:600;} .hero .big{font-size:42px;font-weight:800;line-height:1.02;letter-spacing:-1px;} .hero .big small{font-size:16px;font-weight:600;}
+  .hero .subx{font-size:11px;color:#CBDCFB;margin-top:5px;} .heropill{display:inline-flex;align-items:center;gap:5px;margin-top:10px;font-size:11px;font-weight:800;background:rgba(255,255,255,.16);border:1px solid rgba(191,214,255,.4);padding:6px 12px;border-radius:999px;}
+  .gaugewrap{display:flex;flex-direction:column;align-items:center;z-index:1;}
+
+  /* ===== 컬러 퀵 타일 ===== */
+  .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;}
+  .tile{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:7px;background:var(--card);border-radius:16px;padding:13px 6px;box-shadow:0 6px 16px rgba(15,40,110,.05);transition:.12s;}
+  .tile:active{transform:scale(.95);}
+  .tile .ic{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;font-size:20px;}
+  .tile .ic.b{background:#E6EEFF;} .tile .ic.p{background:#F3E8FF;} .tile .ic.a{background:#FEF3E2;} .tile .ic.g{background:#E4F8EC;}
+  .tile .tl{font-size:10.5px;font-weight:700;color:var(--ink);text-align:center;line-height:1.2;}
+
+  .mini{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+  .mtile{background:var(--ice2);border:1px solid #EAF1FD;border-radius:13px;padding:11px 12px;}
+  .mtile .l{font-size:10.5px;color:var(--muted);font-weight:600;} .mtile .v{font-size:15px;font-weight:800;margin-top:3px;} .mtile .s{font-size:9.5px;color:var(--blue);font-weight:700;margin-top:1px;}
+
+  .seg{display:flex;gap:4px;background:var(--ice2);border-radius:13px;padding:4px;}
+  .seg button{all:unset;cursor:pointer;flex:1;text-align:center;font-size:12.5px;font-weight:700;color:var(--muted);padding:9px 0;border-radius:10px;transition:.15s;}
+  .seg button.on{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;box-shadow:0 4px 10px rgba(29,78,216,.28);}
+
+  .brk{display:flex;align-items:center;justify-content:space-between;font-size:12.5px;padding:7px 0;border-bottom:1px dashed #E6EDF8;} .brk:last-child{border-bottom:none;}
+  .brk .bl{color:var(--muted);font-weight:600;} .brk .bv{font-weight:800;}
+  .brk.total{margin-top:6px;background:var(--ice);border-radius:12px;padding:11px 13px;border:none;} .brk.total .bl{color:var(--ink);} .brk.total .bv{color:var(--blue);font-size:15px;}
+
+  .autorow{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid #EEF3FB;} .autorow:last-child{border-bottom:none;}
+  .aico{width:38px;height:38px;border-radius:12px;background:var(--ice);display:grid;place-items:center;font-size:17px;flex:none;}
+  .autorow .txt{flex:1;min-width:0;} .autorow .txt .l{font-size:10.5px;color:var(--muted);font-weight:600;} .autorow .txt .v{font-size:13.5px;font-weight:800;margin-top:1px;}
+  .srcbadge{font-size:9.5px;font-weight:700;color:var(--blue);background:var(--ice);padding:3px 8px;border-radius:999px;border:1px solid #D8E6FB;flex:none;} .chk{color:var(--ok);font-size:13px;font-weight:800;flex:none;}
+  .synced{font-size:10px;color:var(--ok);font-weight:700;margin-top:11px;display:flex;align-items:center;gap:5px;} .synced .dotp{width:6px;height:6px;border-radius:50%;background:var(--ok);animation:pulse 1.6s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+  .evt{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #EEF3FB;} .evt:last-child{border-bottom:none;}
+  .evtag{font-size:10px;font-weight:800;padding:3px 8px;border-radius:7px;flex:none;} .evtag.council{background:#FEE2E2;color:#B91C1C;} .evtag.event{background:#DBEAFE;color:#1D4ED8;} .evtag.meeting{background:#E0F2FE;color:#0369A1;} .evtag.none{background:#F1F5F9;color:#64748B;}
+  .evt .en{flex:1;font-size:12.5px;font-weight:700;min-width:0;} .evt .et{font-size:10px;color:var(--muted);font-weight:600;} .evt .ef{font-size:12px;font-weight:800;flex:none;} .evt .ef.minus{color:var(--warn);} .evt .ef.plus{color:var(--ok);} .evt .ef.zero{color:var(--muted);}
+
+  .report{background:linear-gradient(180deg,#F7FAFF,#fff);border:1px solid #E4EDFB;}
+  .report p{font-size:12.5px;line-height:1.65;}
+  .modelbadge{display:flex;gap:8px;flex-wrap:wrap;} .mb{font-size:10.5px;font-weight:700;color:var(--navy);background:var(--ice);border:1px solid #D8E6FB;padding:5px 10px;border-radius:999px;}
+
+  /* ===== 차트 ===== */
+  .chartwrap{margin-top:4px;} .chartwrap svg{width:100%;height:auto;display:block;}
+  .legend{display:flex;gap:14px;justify-content:center;margin-top:10px;font-size:10.5px;font-weight:700;color:var(--muted);}
+  .legend i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px;vertical-align:middle;}
+
+  .rankrow{display:flex;align-items:center;gap:9px;margin-bottom:11px;} .rankrow:last-child{margin-bottom:0;} .rankrow .rk{width:18px;height:18px;border-radius:6px;display:grid;place-items:center;font-size:10.5px;font-weight:800;color:#fff;background:#C6D2E8;flex:none;} .rankrow .rk.top{background:linear-gradient(135deg,var(--amber),#FBBF24);}
+  .rankrow .nm{width:64px;font-size:12px;font-weight:700;} .bar{flex:1;height:9px;background:var(--ice);border-radius:999px;overflow:hidden;} .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--azure));border-radius:999px;} .rankrow .pc{width:26px;text-align:right;font-size:11px;font-weight:800;color:var(--blue);}
+  .note{font-size:10px;color:var(--muted);line-height:1.5;margin-top:11px;}
+
+  .kpi{display:grid;grid-template-columns:1fr 1fr;gap:9px;} .kpicard{background:var(--ice2);border:1px solid #E4EDFB;border-radius:14px;padding:12px 13px;} .kpicard .kl{font-size:10.5px;color:var(--muted);font-weight:600;} .kpicard .kv{font-size:20px;font-weight:800;color:var(--blue);margin-top:3px;} .kpicard .ks{font-size:9.5px;color:var(--muted);margin-top:1px;}
+
+  /* AI 식단추천 */
+  .plansum{display:flex;gap:14px;align-items:center;} .plansum .gt{flex:1;font-size:12px;line-height:1.55;color:var(--ink);}
+  .planstats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;}
+  .ps{background:var(--ice2);border:1px solid #E4EDFB;border-radius:12px;padding:9px;text-align:center;} .ps .v{font-size:16px;font-weight:800;color:var(--blue);} .ps .l{font-size:9.5px;color:var(--muted);margin-top:2px;}
+  .planday{display:flex;align-items:flex-start;gap:12px;padding:13px 15px;}
+  .pd-comp{font-size:9.5px;color:var(--muted);margin-top:6px;line-height:1.45;}
+  .pd-day{width:28px;height:28px;border-radius:9px;background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;display:grid;place-items:center;font-size:13px;font-weight:800;flex:none;}
+  .pd-main{flex:1;min-width:0;} .pd-name{font-size:14.5px;font-weight:800;} .pd-cat{font-size:10px;font-weight:800;padding:2px 7px;border-radius:6px;display:inline-block;margin-top:3px;}
+  .pd-cat.meat{background:#FEF3E2;color:var(--meat);} .pd-cat.fish{background:#E0F2FE;color:var(--fish);} .pd-cat.veg{background:#DCFCE7;color:var(--veg);} .pd-cat.soup{background:#F3E8FF;color:var(--soup);}
+  .pd-stat{text-align:right;font-size:10px;color:var(--muted);font-weight:700;line-height:1.5;flex:none;}
+  .planday2{padding:14px 15px;} .pd2-h{display:flex;align-items:center;gap:8px;margin-bottom:11px;}
+  .pd2-h .pd-day{border-radius:8px;} .pd2-stat{margin-left:auto;font-size:10.5px;color:var(--muted);font-weight:700;white-space:nowrap;}
+  .pd-dishes{display:flex;flex-wrap:wrap;gap:6px;}
+  .pd-dish{font-size:11.5px;font-weight:600;color:var(--ink);background:var(--ice2);border:1px solid #E4EDFB;border-radius:8px;padding:5px 9px;}
+  .actions{display:flex;gap:9px;} .actions button{all:unset;cursor:pointer;flex:1;text-align:center;padding:14px;border-radius:14px;font-size:13px;font-weight:800;background:var(--ice2);border:1px solid #E4EDFB;color:var(--ink);}
+  .actions button.primary{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;border-color:transparent;box-shadow:0 6px 14px rgba(29,78,216,.28);} .actions button:active{transform:scale(.97);}
+
+  .toast{position:absolute;left:50%;bottom:82px;transform:translateX(-50%) translateY(10px);background:var(--navy);color:#fff;font-size:12px;font-weight:700;padding:10px 16px;border-radius:999px;opacity:0;transition:.3s;z-index:40;pointer-events:none;box-shadow:0 8px 20px rgba(0,0,0,.25);}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .foot{text-align:center;font-size:9.5px;color:var(--muted);padding:6px 6px 2px;line-height:1.5;}
+  .proto{position:absolute;top:14px;right:16px;z-index:31;font-size:9px;font-weight:700;color:var(--navy);background:rgba(255,255,255,.85);border:1px solid #D8E6FB;padding:3px 8px;border-radius:999px;}
+  .hint{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);font-size:12px;color:#5B6B8C;background:rgba(255,255,255,.8);padding:7px 14px;border-radius:999px;box-shadow:0 4px 14px rgba(15,40,110,.12);}
+  @media(max-width:440px){body{padding:0;background:var(--bg);}.device{width:100vw;height:100vh;border-radius:0;padding:0;box-shadow:none;}.screen{border-radius:0;}.notch{display:none;}.appbar{padding-top:calc(14px + env(safe-area-inset-top));}.hint{display:none;}.proto{top:calc(8px + env(safe-area-inset-top));}}
+</style>
+</head>
+<body>
+  <div class="device">
+    <div class="notch"></div>
+    <span class="proto">시연용 프로토타입</span>
+    <div class="screen">
+      <div class="appbar">
+        <div class="apptop">
+          <div class="brand">
+            <img class="logo" src="data:image/jpeg;base64,/9j/4QAYRXhpZgAASUkqAAgAAAAAAAAAAAAAAP/sABFEdWNreQABAAQAAABkAAD/4QMraHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLwA8P3hwYWNrZXQgYmVnaW49Iu+7vyIgaWQ9Ilc1TTBNcENlaGlIenJlU3pOVGN6a2M5ZCI/PiA8eDp4bXBtZXRhIHhtbG5zOng9ImFkb2JlOm5zOm1ldGEvIiB4OnhtcHRrPSJBZG9iZSBYTVAgQ29yZSA1LjMtYzAxMSA2Ni4xNDU2NjEsIDIwMTIvMDIvMDYtMTQ6NTY6MjcgICAgICAgICI+IDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+IDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiIHhtbG5zOnhtcD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLyIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bXA6Q3JlYXRvclRvb2w9IkFkb2JlIFBob3Rvc2hvcCBDUzYgKFdpbmRvd3MpIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjZERTMxNkMyNzIwNDExRTlCNTcxODJENjczMkJCNzYwIiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOjZERTMxNkMzNzIwNDExRTlCNTcxODJENjczMkJCNzYwIj4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6NkRFMzE2QzA3MjA0MTFFOUI1NzE4MkQ2NzMyQkI3NjAiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6NkRFMzE2QzE3MjA0MTFFOUI1NzE4MkQ2NzMyQkI3NjAiLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz7/7gAmQWRvYmUAZMAAAAABAwAVBAMGCg0AAAl7AAAVAgAAG0QAACKz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" alt="세종특별자치시">
+            <span class="divg"></span>
+            <div class="wm"><b>똑똑 식판</b><span>구내식당 식수예측 · 운영</span></div>
+          </div>
+          <span class="rolebadge">영양사</span>
+          <div class="bell"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 1 1 12 0c0 5 2 6 2 7H4c0-1 2-2 2-7Z"/><path d="M10 21a2 2 0 0 0 4 0"/></svg></div>
+        </div>
+      </div>
+
+      <div class="scrollarea" id="scroll">
+        <!-- 홈 -->
+        <div class="tabscreen on" id="t-home">
+          <div class="hero">
+            <div class="gaugewrap" id="heroGauge"></div>
+            <div class="info"><div class="k" id="heroK">예상 식수</div><div class="big"><span id="heroNum">—</span><small> 명</small></div><div class="subx" id="heroSub">—</div><span class="heropill" id="heroRec">—</span></div>
+          </div>
+          <div class="tiles">
+            <button class="tile" onclick="showTab('t-pred')"><span class="ic b">📊</span><span class="tl">예측 리포트</span></button>
+            <button class="tile" onclick="showTab('t-plan')"><span class="ic p">🍽️</span><span class="tl">AI 식단추천</span></button>
+            <button class="tile" onclick="toast('발주서 자동 전개는 실서비스에서 제공됩니다 📦')"><span class="ic a">📦</span><span class="tl">발주 제안</span></button>
+            <button class="tile" onclick="showTab('t-anal')"><span class="ic g">📈</span><span class="tl">성능 분석</span></button>
+          </div>
+          <div class="sectlabel">오늘 자동 수집 요약 <span class="more" onclick="showTab('t-pred')">자세히 ›</span></div>
+          <div class="card"><div class="mini" id="miniStats"></div></div>
+          <div class="card"><h4>📋 오늘의 행사·의회 일정 <span class="impact" id="schedImpactH">—</span></h4><div id="eventsH"></div></div>
+        </div>
+
+        <!-- 예측 -->
+        <div class="tabscreen" id="t-pred">
+          <div class="card"><h4>📅 예측 대상일 <span class="auto">자동 조회</span></h4><div class="seg" id="dateTabs"></div></div>
+          <div class="card"><h4>👥 실근무 인원 산출 <span class="auto">자동 계산</span></h4><div id="breakdown"></div></div>
+          <div class="card"><h4>🔗 데이터 자동 수집 <span class="auto">수기 입력 0</span></h4><div id="autolist"></div><div class="synced"><span class="dotp"></span><span id="syncedtxt">방금 자동 동기화됨</span></div></div>
+          <div class="card"><h4>📋 행사·의회 일정 <span class="impact" id="schedImpact">—</span></h4><div id="eventsN"></div><div class="note">행정달력·의회 회의일정을 자동 연계해 특수일 식수 보정에 반영합니다.</div></div>
+          <div class="card report"><h4><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--blue)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l1.5 3.9L17.4 9l-3.9 1.6L12 14.5l-1.5-3.9L6.6 9l3.9-1.6z"/></svg>생성형 AI 예측 리포트</h4><p id="report">—</p></div>
+        </div>
+
+        <!-- 식단추천 (AI) -->
+        <div class="tabscreen" id="t-plan">
+          <div class="card">
+            <h4>🍽️ AI 식단 추천 <span class="gen">생성형 AI</span></h4>
+            <div class="sub">예측 선호도·영양 균형·예산·최근 중복을 반영해 <b style="color:var(--blue)">주간 식단 초안</b>을 제안합니다.</div>
+            <div class="seg" id="conceptTabs" style="margin-top:12px;">
+              <button class="on" onclick="setConcept('균형형')">균형형</button>
+              <button onclick="setConcept('인기형')">인기형</button>
+              <button onclick="setConcept('절약형')">절약형</button>
+            </div>
+          </div>
+          <div class="card">
+            <h4>✨ AI 추천 요약</h4>
+            <div class="plansum"><div class="gaugewrap" id="planGauge"></div><div class="gt" id="planText">—</div></div>
+            <div class="planstats" id="planStats"></div>
+          </div>
+          <div class="sectlabel">요일별 추천 식단 (한 상 구성)</div>
+          <div id="planDays" style="display:flex;flex-direction:column;gap:9px;"></div>
+          <div class="card actions">
+            <button onclick="regenPlan()">🔄 다른 조합</button>
+            <button class="primary" onclick="confirmPlan()">이 식단 확정</button>
+          </div>
+          <div class="note">※ AI 추천 초안입니다. 영양사가 검토·수정 후 확정하며, 확정 식단은 예측에 자동 반영됩니다. (Human-in-the-loop)</div>
+        </div>
+
+        <!-- 분석 -->
+        <div class="tabscreen" id="t-anal">
+          <div class="card"><h4>🎯 예측 성능 관리</h4>
+            <div class="kpi">
+              <div class="kpicard"><div class="kl">예측 오차 (MAE)</div><div class="kv">18.4명</div><div class="ks">최근 30일 · 목표 ≤20</div></div>
+              <div class="kpicard"><div class="kl">잔반 감축률</div><div class="kv">-31%</div><div class="ks">도입 전 대비</div></div>
+              <div class="kpicard"><div class="kl">식자재비 절감</div><div class="kv">-14%</div><div class="ks">월 환산</div></div>
+              <div class="kpicard"><div class="kl">발주 결정</div><div class="kv">3분</div><div class="ks">기존 40분 → 자동화</div></div>
+            </div>
+            <div class="modelbadge" style="margin-top:12px;"><span class="mb">모델 XGBoost</span><span class="mb">평가 MAE</span><span class="mb">일 1회 재학습</span></div>
+          </div>
+          <div class="card"><h4>📊 예측 정확도 추이 <span style="margin-left:auto;font-size:10px;font-weight:700;color:var(--muted)">최근 7일</span></h4>
+            <div class="seg" id="chartTabs" style="margin-bottom:14px;">
+              <button class="on" onclick="setChart('acc')">예측 vs 실측</button>
+              <button onclick="setChart('dow')">요일별 평균</button>
+            </div>
+            <div class="chartwrap" id="chart"></div>
+            <div class="legend" id="legend"></div>
+          </div>
+          <div class="card"><h4>🏆 월간 인기 메뉴 순위</h4><div id="rank"></div></div>
+          <div class="card"><h4>✨ 차별점 · 임베딩 신메뉴 추정</h4>
+            <div class="note" style="font-size:11.5px;color:var(--ink);">공공 급식 수요예측 상위 솔루션도 <b>메뉴 간 유사성은 미반영</b>(라벨 인코딩)합니다. 「똑똑 식판」은 <b style="color:var(--blue)">임베딩</b>으로 표본이 없는 <b>신메뉴</b>도 의미가 가까운 유사메뉴로 인기도를 추정합니다.</div>
+            <div class="note">※ 변수 체계는 공공 구내식당 식수예측 데이터 표준(정원·휴가·출장·재택·요일·메뉴)을 참고했습니다.</div>
+          </div>
+        </div>
+
+        <div class="foot">시연용 프로토타입 · 값·예측치는 데모용 근사이며 실서비스는 도입 기관 실데이터로 학습</div>
+      </div>
+
+      <div class="tabbar">
+        <button class="on" data-t="t-home" onclick="showTab('t-home')"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>홈</button>
+        <button data-t="t-pred" onclick="showTab('t-pred')"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M7 15l3-3 3 2 4-5"/></svg>예측</button>
+        <button data-t="t-plan" onclick="showTab('t-plan')"><svg viewBox="0 0 24 24"><path d="M6 3v18M6 3c2 0 3 2 3 4s-1 4-3 4M17 3v18M14 3v6a3 3 0 0 0 3 3"/></svg>식단추천</button>
+        <button data-t="t-anal" onclick="showTab('t-anal')"><svg viewBox="0 0 24 24"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>분석</button>
+      </div>
+      <div class="toast" id="toast"></div>
+    </div>
+  </div>
+  <div class="hint">운영자(영양사)용 앱 · 하단 탭으로 이동</div>
+
+<script>
+const MENUS=[
+ {name:'제육볶음',cat:'메인 · 육류',pop:92,allergens:['대두','밀'],kcal:640},
+ {name:'돈까스',cat:'메인 · 육류',pop:88,allergens:['밀','난류','우유'],kcal:720},
+ {name:'함박스테이크',cat:'메인 · 육류',pop:85,allergens:['밀','난류','우유','대두'],kcal:690},
+ {name:'김치찌개',cat:'국물 · 찌개',pop:78,allergens:['대두'],kcal:480},
+ {name:'비빔밥',cat:'밥류',pop:70,allergens:['대두','난류'],kcal:560},
+ {name:'고등어구이',cat:'생선',pop:55,allergens:['생선'],kcal:430},
+];
+const DAYF={'월':15,'화':5,'수':0,'목':-20,'금':-60};
+const CAP=980;
+const DATES=[
+ {key:'내일',dow:'목',dowLabel:'목요일',rain:true,temp:24,leave:120,trip:88,remote:60,menuIdx:0,offset:1,
+   events:[{tag:'의회',name:'세종시의회 임시회 본회의',et:'09:30 · 본회의장',f:-15},{tag:'회의',name:'간부 정책조정회의',et:'14:00 · 상황실',f:-5}]},
+ {key:'모레',dow:'금',dowLabel:'금요일',rain:false,temp:27,leave:160,trip:70,remote:60,menuIdx:5,offset:2,
+   events:[{tag:'none',name:'특이 행사 없음',et:'정상 근무일',f:0}]},
+ {key:'글피',dow:'월',dowLabel:'월요일',rain:false,temp:21,leave:100,trip:95,remote:60,menuIdx:1,offset:3,
+   events:[{tag:'행사',name:'시민 정책박람회 (청사 1층 로비)',et:'10:00~17:00',f:25},{tag:'회의',name:'주간 부서장 회의',et:'09:00 · 대회의실',f:-5}]},
+];
+const state={dateIdx:0};
+function cur(){return DATES[state.dateIdx];}
+function staffOf(d){return CAP-d.leave-d.trip-d.remote;}
+function schedF(){return cur().events.reduce((a,e)=>a+e.f,0);}
+function ring(pct,color,center,sub,size=104){pct=Math.max(0,Math.min(100,pct));const r=(size-14)/2,c=2*Math.PI*r,off=c*(1-pct/100),cc=size/2;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${cc}" cy="${cc}" r="${r}" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="11"/><circle cx="${cc}" cy="${cc}" r="${r}" fill="none" stroke="${color}" stroke-width="11" stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" transform="rotate(-90 ${cc} ${cc})"/><text x="50%" y="49%" text-anchor="middle" font-size="24" font-weight="800" fill="#fff">${center}</text><text x="50%" y="64%" text-anchor="middle" font-size="10" fill="#CBDCFB">${sub}</text></svg>`;}
+function predict(){const d=cur(),m=MENUS[d.menuIdx],staff=staffOf(d);const dayF=DAYF[d.dow],rainF=d.rain?-25:0,tempF=Math.round((22-d.temp)*1.1),menuF=Math.round((m.pop-70)*1.2),sF=schedF();let p=staff+dayF+rainF+tempF+menuF+sF;const band=Math.round(p*0.035),safety=Math.round(p*0.03)+8;return {p,band,rec:p+safety,m,d,staff,delta:dayF+rainF+tempF+menuF+sF};}
+
+const dateTabs=document.getElementById('dateTabs');
+DATES.forEach((d,i)=>{const b=document.createElement('button');if(i===0)b.className='on';b.textContent=`${d.key}·${d.dow}`;
+  b.onclick=()=>{state.dateIdx=i;[...dateTabs.children].forEach(x=>x.classList.remove('on'));b.classList.add('on');update();};dateTabs.appendChild(b);});
+
+function renderBreakdown(){const d=cur(),staff=staffOf(d);document.getElementById('breakdown').innerHTML=
+  `<div class="brk"><span class="bl">본청 정원</span><span class="bv">${CAP}명</span></div><div class="brk"><span class="bl">− 휴가자</span><span class="bv">${d.leave}명</span></div><div class="brk"><span class="bl">− 출장자</span><span class="bv">${d.trip}명</span></div><div class="brk"><span class="bl">− 재택근무자</span><span class="bv">${d.remote}명</span></div><div class="brk total"><span class="bl">= 실근무 인원</span><span class="bv">${staff}명</span></div>`;}
+const autolist=document.getElementById('autolist');
+function renderAuto(){const d=cur(),m=MENUS[d.menuIdx],evCount=d.events.filter(e=>e.tag!=='none').length;
+  const rows=[{ic:'👥',l:'실근무 인원 (정원−휴가·출장·재택)',v:staffOf(d)+'명',src:'인사랑'},{ic:'📅',l:'요일 · 일정',v:d.dowLabel+(evCount?` · 행사/의회 ${evCount}건`:' · 특이일정 없음'),src:'행정달력'},{ic:d.rain?'🌧️':'☀️',l:'기상 예보',v:(d.rain?'비':'맑음')+' · '+d.temp+'°C',src:'기상청 API'},{ic:'🍽️',l:'등록 식단 (메인)',v:m.name,src:'식단시스템'}];
+  autolist.innerHTML=rows.map(r=>`<div class="autorow"><span class="aico">${r.ic}</span><div class="txt"><div class="l">${r.l}</div><div class="v">${r.v}</div></div><span class="srcbadge">${r.src}</span><span class="chk">✓</span></div>`).join('');
+  const t=new Date();document.getElementById('syncedtxt').textContent=`방금 자동 동기화됨 · ${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')} 기준`;}
+function renderEvents(el){el.innerHTML=cur().events.map(e=>{const cls=e.tag==='의회'?'council':e.tag==='행사'?'event':e.tag==='회의'?'meeting':'none';const label=e.tag==='none'?'일반':e.tag;const s=e.f>0?'plus':e.f<0?'minus':'zero';const imp=`<span class="ef ${s}">${e.f===0?'영향 없음':(e.f>0?'+':'')+e.f+'명'}</span>`;return `<div class="evt"><span class="evtag ${cls}">${label}</span><div class="en">${e.name}<div class="et">${e.et}</div></div>${imp}</div>`;}).join('');}
+function setSchedImpact(id){const f=schedF(),el=document.getElementById(id);el.className='impact '+(f>0?'plus':f<0?'minus':'zero');el.textContent=f===0?'식수 영향 없음':`식수 ${f>0?'+':''}${f}명`;}
+function renderMini(){const d=cur(),m=MENUS[d.menuIdx];document.getElementById('miniStats').innerHTML=
+  `<div class="mtile"><div class="l">👥 실근무 인원</div><div class="v">${staffOf(d)}명</div><div class="s">인사랑 연계</div></div><div class="mtile"><div class="l">${d.rain?'🌧️':'☀️'} 기상</div><div class="v">${d.rain?'비':'맑음'} ${d.temp}°C</div><div class="s">기상청 API</div></div><div class="mtile"><div class="l">📅 일정</div><div class="v">${d.events.filter(e=>e.tag!=='none').length}건</div><div class="s">행정달력</div></div><div class="mtile"><div class="l">🍽️ 메인</div><div class="v">${m.name}</div><div class="s">식단시스템</div></div>`;}
+function update(){const r=predict();renderBreakdown();renderAuto();renderEvents(document.getElementById('eventsN'));setSchedImpact('schedImpact');renderEvents(document.getElementById('eventsH'));setSchedImpact('schedImpactH');renderMini();
+  const pctCap=Math.round(r.p/CAP*100);document.getElementById('heroGauge').innerHTML=ring(pctCap,'#8EC5FF',r.p,'정원대비 '+pctCap+'%');
+  document.getElementById('heroK').textContent=`${r.d.key}(${r.d.dowLabel}) 예상 식수`;document.getElementById('heroNum').textContent=r.p;
+  document.getElementById('heroSub').innerHTML=`신뢰범위 ±${r.band}명 · 실근무 ${r.staff}명`;document.getElementById('heroRec').innerHTML=`✔ 권장 조리량 ${r.rec}인분`;
+  const trend=r.delta>=0?'많은':'적은',rainTxt=r.d.rain?'비 예보가 있어':'맑은 날씨로';let rep=`${r.d.key}(${r.d.dowLabel})은 ${rainTxt} 평소보다 ${trend} <b>${r.p}명</b>이 방문할 것으로 예상됩니다. `;
+  if(r.m.pop>=80)rep+=`인기 메뉴 ‘${r.m.name}’이(가) 포함되어 방문 증가 요인이 있습니다. `;else if(r.m.pop<60)rep+=`‘${r.m.name}’은(는) 상대적 비인기 메뉴로 감소 요인이 됩니다. `;
+  const council=r.d.events.find(e=>e.tag==='의회'),bigEvent=r.d.events.find(e=>e.tag==='행사'&&e.f>0);
+  if(council)rep+=`또한 <b>${council.name}</b> 일정으로 관련 부서 출타가 예상되어 감소 요인이 반영되었습니다. `;if(bigEvent)rep+=`<b>${bigEvent.name}</b> 개최로 청사 체류·방문 인원 증가가 반영되었습니다. `;
+  rep+=`신뢰범위 ±${r.band}명, 안전재고 포함 <b>권장 조리량은 ${r.rec}인분</b>입니다.`;document.getElementById('report').innerHTML=rep;}
+
+const rankEl=document.getElementById('rank');
+[...MENUS].sort((a,b)=>b.pop-a.pop).forEach((m,i)=>{const row=document.createElement('div');row.className='rankrow';row.innerHTML=`<span class="rk ${i===0?'top':''}">${i+1}</span><span class="nm">${m.name}</span><span class="bar"><i style="width:${m.pop}%"></i></span><span class="pc">${m.pop}</span>`;rankEl.appendChild(row);});
+
+/* ===== 차트 (분석) ===== */
+const ACC=[ // 최근 7일 예측 vs 실측
+ {d:'월',p:742,a:731},{d:'화',p:688,a:702},{d:'수',p:715,a:709},{d:'목',p:640,a:655},{d:'금',p:598,a:571},{d:'월',p:760,a:748},{d:'화',p:706,a:719}
+];
+const DOW=[{d:'월',v:751},{d:'화',v:707},{d:'수',v:712},{d:'목',v:648},{d:'금',v:585}];
+let chartMode='acc';
+function setChart(m){chartMode=m;[...document.getElementById('chartTabs').children].forEach((b,i)=>b.classList.toggle('on',(m==='acc'&&i===0)||(m==='dow'&&i===1)));renderChart();}
+function renderChart(){const W=300,H=150,PL=30,PR=8,PT=12,PB=22,el=document.getElementById('chart'),leg=document.getElementById('legend');
+  if(chartMode==='acc'){
+    const vals=ACC.flatMap(x=>[x.p,x.a]),mn=Math.min(...vals)-20,mx=Math.max(...vals)+20;
+    const X=i=>PL+(W-PL-PR)*i/(ACC.length-1),Y=v=>PT+(H-PT-PB)*(1-(v-mn)/(mx-mn));
+    let grid='';for(let g=0;g<=3;g++){const yy=PT+(H-PT-PB)*g/3;grid+=`<line x1="${PL}" y1="${yy}" x2="${W-PR}" y2="${yy}" stroke="#EEF2FA" stroke-width="1"/>`;}
+    const pPts=ACC.map((x,i)=>`${X(i)},${Y(x.p)}`).join(' '),aPts=ACC.map((x,i)=>`${X(i)},${Y(x.a)}`).join(' ');
+    const area=`${PL},${Y(mn+20)} ${aPts} ${W-PR},${Y(mn+20)}`;
+    const dots=ACC.map((x,i)=>`<circle cx="${X(i)}" cy="${Y(x.a)}" r="3" fill="#1D4ED8"/>`).join('')+ACC.map((x,i)=>`<circle cx="${X(i)}" cy="${Y(x.p)}" r="2.4" fill="#fff" stroke="#8EC5FF" stroke-width="1.6"/>`).join('');
+    const labs=ACC.map((x,i)=>`<text x="${X(i)}" y="${H-6}" text-anchor="middle" font-size="9" fill="#94A3B8">${x.d}</text>`).join('');
+    el.innerHTML=`<svg viewBox="0 0 ${W} ${H}"><defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1D4ED8" stop-opacity=".16"/><stop offset="1" stop-color="#1D4ED8" stop-opacity="0"/></linearGradient></defs>${grid}<polygon points="${area}" fill="url(#ag)"/><polyline points="${pPts}" fill="none" stroke="#8EC5FF" stroke-width="2.4" stroke-dasharray="5 4" stroke-linecap="round"/><polyline points="${aPts}" fill="none" stroke="#1D4ED8" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>${dots}${labs}</svg>`;
+    leg.innerHTML=`<span><i style="background:#8EC5FF"></i>예측</span><span><i style="background:#1D4ED8"></i>실측</span><span style="color:var(--ok)"><i style="background:#16A34A"></i>MAE 18.4명</span>`;
+  }else{
+    const mx=Math.max(...DOW.map(x=>x.v))+30,bw=26;
+    const X=i=>PL+(W-PL-PR)*(i+0.5)/DOW.length,Y=v=>PT+(H-PT-PB)*(1-v/mx);
+    let grid='';for(let g=0;g<=3;g++){const yy=PT+(H-PT-PB)*g/3;grid+=`<line x1="${PL}" y1="${yy}" x2="${W-PR}" y2="${yy}" stroke="#EEF2FA" stroke-width="1"/>`;}
+    const bars=DOW.map((x,i)=>{const xx=X(i),yy=Y(x.v),h=(H-PT-PB)-(yy-PT);return `<rect x="${xx-bw/2}" y="${yy}" width="${bw}" height="${h}" rx="6" fill="url(#bg)"/><text x="${xx}" y="${yy-5}" text-anchor="middle" font-size="9" font-weight="800" fill="#1D4ED8">${x.v}</text><text x="${xx}" y="${H-6}" text-anchor="middle" font-size="9" fill="#94A3B8">${x.d}</text>`;}).join('');
+    el.innerHTML=`<svg viewBox="0 0 ${W} ${H}"><defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2E6BE6"/><stop offset="1" stop-color="#8EC5FF"/></linearGradient></defs>${grid}${bars}</svg>`;
+    leg.innerHTML=`<span><i style="background:#2E6BE6"></i>요일별 평균 식수 (최근 8주)</span>`;
+  }
+}
+
+/* ===== AI 식단 추천 (한 상 전체 구성) ===== */
+const DAYMENUS=[
+ {cat:'육류',pop:92,cost:2800,dishes:['찰흑미밥','미역국','제육볶음','시금치나물','포기김치']},
+ {cat:'육류',pop:88,cost:3000,dishes:['흑미밥','유부된장국','수제돈까스','양배추샐러드','단무지','포기김치']},
+ {cat:'육류',pop:85,cost:3200,dishes:['백미밥','옥수수스프','함박스테이크','브로콜리무침','배추김치']},
+ {cat:'육류',pop:82,cost:2600,dishes:['치킨마요덮밥','계란파국','콘샐러드','단무지','포기김치']},
+ {cat:'생선',pop:58,cost:2700,dishes:['강낭콩밥','무된장국','코다리조림','콩나물무침','깍두기']},
+ {cat:'생선',pop:55,cost:2400,dishes:['기장밥','시래기국','고등어구이','도라지무침','깍두기']},
+ {cat:'채식',pop:70,cost:2200,dishes:['영양비빔밥','유부장국','약고추장','계란후라이','배추겉절이']},
+ {cat:'채식',pop:62,cost:1900,dishes:['백미밥','어묵국','두부김치','마늘종볶음','배추김치']},
+ {cat:'국물',pop:78,cost:2000,dishes:['현미밥','김치찌개','계란말이','콩나물무침','김구이']},
+ {cat:'국물',pop:66,cost:1900,dishes:['보리밥','된장찌개','건파래볶음','시금치나물','총각김치']},
+];
+const DAYS=['월','화','수','목','금'];
+const CATCLS={육류:'meat',생선:'fish',채식:'veg',국물:'soup'};
+function pickPlan(concept,variant){
+  let idx=DAYMENUS.map((_,i)=>i);
+  if(concept==='인기형')idx.sort((a,b)=>DAYMENUS[b].pop-DAYMENUS[a].pop);
+  else if(concept==='절약형')idx.sort((a,b)=>DAYMENUS[a].cost-DAYMENUS[b].cost);
+  else{const order=['육류','생선','채식','국물'],seen={},arr=[];order.forEach(c=>{const f=idx.find(i=>DAYMENUS[i].cat===c);if(f!=null){arr.push(f);seen[f]=1;}});idx.filter(i=>!seen[i]).sort((a,b)=>DAYMENUS[b].pop-DAYMENUS[a].pop).forEach(i=>arr.push(i));idx=arr;}
+  if(variant)idx=idx.slice(1).concat(idx.slice(0,1));
+  return idx.slice(0,5).map(i=>DAYMENUS[i]);
+}
+let planConcept='균형형',planVariant=0;
+function setConcept(c){planConcept=c;planVariant=0;[...document.getElementById('conceptTabs').children].forEach(b=>b.classList.toggle('on',b.textContent===c));renderPlan();}
+function regenPlan(){planVariant=(planVariant+1)%2;renderPlan();toast('다른 조합을 추천했어요 🔄');}
+function confirmPlan(){toast('이 식단이 확정되어 예측에 반영됩니다 ✓');}
+function renderPlan(){
+  const plan=pickPlan(planConcept,planVariant);
+  let sumPop=0,sumCost=0;const cats=new Set();
+  document.getElementById('planDays').innerHTML=plan.map((m,i)=>{sumPop+=m.pop;sumCost+=m.cost;cats.add(m.cat);const est=Math.round(600+(m.pop-70)*2);
+    const list=m.dishes.map(n=>`<span class="pd-dish">${n}</span>`).join('');
+    return `<div class="card planday2"><div class="pd2-h"><span class="pd-day">${DAYS[i]}</span><span class="pd-cat ${CATCLS[m.cat]}">${m.cat}</span><span class="pd2-stat">예상 ${est}명 · ${m.cost.toLocaleString()}원/인</span></div><div class="pd-dishes">${list}</div></div>`;}).join('');
+  const avgPop=Math.round(sumPop/5),avgCost=Math.round(sumCost/5),balance=cats.size;
+  document.getElementById('planGauge').innerHTML=ring(avgPop,'#60A5FA',avgPop,'평균 인기').replace('fill="#CBDCFB"','fill="#7A88A6"').replace(/stroke="rgba\(255,255,255,\.25\)"/,'stroke="#E6EDF8"').replace('fill="#fff">'+avgPop,'fill="#1A2540">'+avgPop);
+  let txt='';
+  if(planConcept==='균형형')txt=`육류·생선·채식·국물 <b>${balance}종</b>을 요일별로 순환해 <b>영양 균형</b>과 반복 피로도를 낮췄습니다. 평균 인기 ${avgPop}점을 유지하며 특정 카테고리 편중을 피했습니다.`;
+  else if(planConcept==='인기형')txt=`직원 선호도가 높은 메뉴를 우선 배치해 <b>참석률·만족도</b>를 극대화했습니다. 평균 인기 ${avgPop}점으로 주간 최고 수준입니다.`;
+  else txt=`저단가 메뉴 중심으로 1인 평균 원가를 <b>${avgCost.toLocaleString()}원</b>까지 낮추면서도 인기 ${avgPop}점을 확보한 <b>예산 최적화</b> 구성입니다.`;
+  document.getElementById('planText').innerHTML=txt;
+  document.getElementById('planStats').innerHTML=`<div class="ps"><div class="v">${avgPop}</div><div class="l">평균 인기점수</div></div><div class="ps"><div class="v">${avgCost.toLocaleString()}</div><div class="l">1인 평균 원가(원)</div></div><div class="ps"><div class="v">${balance}종</div><div class="l">카테고리 다양성</div></div>`;
+}
+let toastTimer;
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),1900);}
+
+function showTab(t){document.querySelectorAll('.tabscreen').forEach(s=>s.classList.toggle('on',s.id===t));document.querySelectorAll('.tabbar button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));document.getElementById('scroll').scrollTop=0;}
+
+update();renderPlan();renderChart();
+const _tab=new URLSearchParams(location.search).get('tab');if(_tab)showTab(_tab);
+</script>
+</body>
+</html>

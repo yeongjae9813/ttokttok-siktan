@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>똑똑 식판 · 세종특별자치시 구내식당 AI 식수예측</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root{--navy:#0E2A6B;--blue:#1D4ED8;--blue2:#2563EB;--ink:#1F2A44;--gray:#5A6B87;--line:#E4E9F2;--bg:#F6F8FC;
+    --font:'Pretendard','Pretendard Variable','Malgun Gothic',sans-serif;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:var(--font);color:var(--ink);background:radial-gradient(1100px 600px at 50% -10%,#DCE9FB,transparent 60%),linear-gradient(180deg,#EEF3FB,#DEE8F7);min-height:100vh;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:940px;margin:0 auto;padding:56px 22px 70px;}
+  .hero{text-align:center;}
+  .badge{display:inline-block;font-size:13px;font-weight:800;color:var(--blue);background:#EAF0FE;border:1px solid #D8E6FB;padding:7px 15px;border-radius:999px;}
+  h1{font-size:52px;font-weight:800;letter-spacing:-2px;color:var(--navy);margin-top:20px;}
+  .def{font-size:20px;font-weight:600;color:var(--gray);margin-top:14px;line-height:1.55;}
+  .def b{color:var(--navy);font-weight:800;}
+  .meta{font-size:13.5px;color:var(--gray);margin-top:16px;font-weight:600;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:40px;}
+  a.card{text-decoration:none;color:inherit;background:#fff;border:1px solid var(--line);border-radius:18px;padding:24px;box-shadow:0 8px 24px rgba(20,40,90,.06);display:flex;gap:16px;align-items:flex-start;transition:.16s;}
+  a.card:hover{transform:translateY(-3px);box-shadow:0 16px 34px rgba(20,40,90,.12);border-color:#C9DAF5;}
+  a.card.wide{grid-column:1/-1;}
+  .ic{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;flex:none;}
+  .ic svg{width:26px;height:26px;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
+  .ic.b{background:#E6EEFF;} .ic.b svg{stroke:var(--blue);}
+  .ic.n{background:#E7ECF6;} .ic.n svg{stroke:var(--navy);}
+  .ic.g{background:#E4F8EC;} .ic.g svg{stroke:#16A34A;}
+  .ic.p{background:#F3E8FF;} .ic.p svg{stroke:#7C3AED;}
+  .ct h2{font-size:19px;font-weight:800;color:var(--navy);display:flex;align-items:center;gap:8px;}
+  .ct h2 .arw{color:var(--gray);font-weight:700;transition:.16s;}
+  a.card:hover .arw{color:var(--blue);transform:translateX(3px);}
+  .ct p{font-size:14px;color:var(--gray);line-height:1.55;margin-top:7px;}
+  .ct .tag{display:inline-block;font-size:11px;font-weight:800;color:var(--blue);background:#EAF0FE;border-radius:999px;padding:3px 10px;margin-top:10px;}
+  .foot{text-align:center;font-size:12.5px;color:#9AA9C4;margin-top:44px;line-height:1.7;}
+  @media(max-width:640px){.grid{grid-template-columns:1fr;} h1{font-size:40px;} a.card.wide{grid-column:auto;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <span class="badge">아이디어 제안 · 시연용 프로토타입</span>
+    <h1>똑똑 식판</h1>
+    <div class="def"><b>내일 점심 몇 명이 올지</b> 예측해 주는<br>AI 구내식당 서비스</div>
+    <div class="meta">공무원 AI 행정혁신 우수사례·아이디어 공모 · 세종특별자치시 본청 구내식당</div>
+  </div>
+
+  <div class="grid">
+    <a class="card wide" href="app.html">
+      <div class="ic b"><svg viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="2"/><path d="M11 18h2"/></svg></div>
+      <div class="ct">
+        <h2>통합 앱 (영양사 · 직원) <span class="arw">›</span></h2>
+        <p>상단 토글 하나로 <b>영양사 화면</b>(예측·식단추천·분석)과 <b>직원 화면</b>(식단·혼잡도·비서)을 오가며 볼 수 있는 작동 데모입니다.</p>
+        <span class="tag">가장 먼저 눌러보세요</span>
+      </div>
+    </a>
+
+    <a class="card" href="engine.html">
+      <div class="ic g"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M7 15l3-3 3 2 4-5"/></svg></div>
+      <div class="ct">
+        <h2>AI 예측 엔진 <span class="arw">›</span></h2>
+        <p>샘플 데이터로 브라우저에서 <b>실제 학습·예측</b>. 슬라이더를 움직이면 예측 식수가 실시간으로 바뀝니다.</p>
+        <span class="tag">데이터로 실제 계산</span>
+      </div>
+    </a>
+
+    <a class="card" href="deck.html">
+      <div class="ic n"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+      <div class="ct">
+        <h2>발표 자료 <span class="arw">›</span></h2>
+        <p>12장 발표 슬라이드. <b>← →</b> 방향키로 넘기고 <b>F</b>로 전체화면.</p>
+        <span class="tag">브라우저 발표용</span>
+      </div>
+    </a>
+
+    <a class="card" href="operator.html">
+      <div class="ic n"><svg viewBox="0 0 24 24"><path d="M6 20a6 6 0 0 1 12 0M12 4a4 4 0 1 1 0 8 4 4 0 0 1 0-8z"/></svg></div>
+      <div class="ct"><h2>영양사 앱 <span class="arw">›</span></h2><p>운영자용 단독 화면.</p></div>
+    </a>
+
+    <a class="card" href="employee.html">
+      <div class="ic p"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 0 16 0Z"/><path d="M2 12h20M12 4v3"/></svg></div>
+      <div class="ct"><h2>직원 앱 <span class="arw">›</span></h2><p>이용자용 단독 화면.</p></div>
+    </a>
+  </div>
+
+  <div class="foot">시연용 프로토타입 · 수치는 아이디어 단계의 기대·목표치(실측값 아님)<br>세종특별자치시 「똑똑 식판」</div>
+</div>
+</body>
+</html>
