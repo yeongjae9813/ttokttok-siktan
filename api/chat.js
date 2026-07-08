@@ -7,28 +7,7 @@ module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') { res.status(204).end(); return; }
   if (req.method === 'GET') {
-    const hasKey = !!process.env.GEMINI_API_KEY;
-    const KEY = process.env.GEMINI_API_KEY;
-    if (!(req.query && (req.query.test || req.query.list))) { res.status(200).json({ ok: true, hasKey: hasKey, node: process.version }); return; }
-    if (!hasKey) { res.status(200).json({ hasKey: false }); return; }
-    try {
-      if (req.query.list) {
-        const lr = await fetch('https://generativelanguage.googleapis.com/v1beta/models?key=' + KEY);
-        const lt = await lr.text();
-        res.status(200).json({ list_status: lr.status, body: lt.slice(0, 1800) });
-        return;
-      }
-      const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-2.5-flash-lite', 'gemini-1.5-flash', 'gemini-flash-latest'];
-      const out = [];
-      for (const mm of models) {
-        try {
-          const u = 'https://generativelanguage.googleapis.com/v1beta/models/' + mm + ':generateContent?key=' + KEY;
-          const rr = await fetch(u, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: 'hi' }] }] }) });
-          out.push({ model: mm, status: rr.status });
-        } catch (e) { out.push({ model: mm, err: String((e && e.message) || e) }); }
-      }
-      res.status(200).json({ hasKey: true, results: out });
-    } catch (e) { res.status(200).json({ hasKey: true, fetch_error: String((e && e.message) || e) }); }
+    res.status(200).json({ ok: true, hasKey: !!process.env.GEMINI_API_KEY, model: process.env.GEMINI_MODEL || 'gemini-2.5-flash' });
     return;
   }
   if (req.method !== 'POST') { res.status(405).json({ error: 'method_not_allowed' }); return; }
@@ -44,7 +23,7 @@ module.exports = async (req, res) => {
     const ctx = body.context || {};
     if (!message.trim()) { res.status(400).json({ error: 'no_message' }); return; }
 
-    const model = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
+    const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
     const sys = [
       '너는 세종특별자치시 본청 구내식당 서비스 「똑똑 식판」의 친절한 식단 안내 도우미야.',
       '아래 [오늘 정보]만 근거로 한국어로 1~3문장, 짧고 친근하게 답해.',
